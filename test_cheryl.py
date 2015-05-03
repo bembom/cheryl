@@ -8,7 +8,6 @@ from cheryl import (Player, Game, Knows, Statement,
                     DuplicateNamesError, InvalidStatementError, 
                     NoGameFoundError, NoSolutionError, TooManyTriesError)
 
-import cheryl
 
 @pytest.fixture
 def player1_told2():

@@ -4,8 +4,6 @@ from functools import partial
 from operator import itemgetter
 import random
 
-import pandas as pd
-
 
 class Player(object):
 
@@ -189,18 +187,23 @@ class Game(object):
         NoSolutionError
 
         """
+        if trace: 
+            print("Before filtering:")
+            print(repr(self))
 
         if inplace:
-            for statement in statements:
+            for i, statement in enumerate(statements, 1):
                 self.filter(statement, inplace=True)
                 if trace:
+                    print("\nAfter applying statement {}:".format(i))
                     print(repr(self))
         
         else:
             game = self 
-            for statement in statements:
+            for i, statement in enumerate(statements, 1):
                 game = game.filter(statement, inplace=False)
                 if trace:
+                    print("\nAfter applying statement {}:".format(i))
                     print(repr(game))
 
             return game
@@ -240,14 +243,19 @@ class Game(object):
         for player in self.players:
             views.append(player.view(self.elems))
 
-        frame = pd.DataFrame(views).T
+        width = len(views[0][0])
         col_names = []
         for player in self.players:
-            col_name = '{}: {}={}'.format(player.name, player.index, player.told)
+            col_name = '{0:^{1}}'.format(player.name, width)
             col_names.append(col_name)
-        frame.columns = col_names
+                
+        header = '\t'.join(col_names)
 
-        return repr(frame)
+        transposed = list(zip(*views))
+        lines = map(lambda x: '\t'.join(x), transposed)
+        body = '\n'.join(lines)
+
+        return '\n'.join([header, body])
 
 
 class Statement(object):
@@ -426,8 +434,6 @@ def find_game(domains, n_elems, statements, n_trys, seed=123):
 
     msg = repr(Counter(n_solutions))
     raise NoGameFoundError(msg)
-
-
 
 
 class Knows(Enum):
