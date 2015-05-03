@@ -94,14 +94,25 @@ class Player(object):
 
 class Game(object):
 
-    def __init__(self, elems, players):
+    def __init__(self, elems, player_names=None):
+
+        n_players = len(elems[0])
         self.elems = set(elems)
 
-        names = [player.name for player in players]
-        if len(names) != len(set(names)):
-            raise DuplicateNamesError()
+        if player_names is None:  
+            player_names = [str(i) for i in range(n_players)] 
+        elif len(player_names) != len(set(player_names)):
+            msg  = "player_names cannot contain duplicates"
+            raise BadPlayerNamesError(msg)
+        elif len(player_names) != n_players:
+            msg = "Expected {exp} names but got {obs}".format(
+                    exp=n_players,
+                    obs=len(player_names)
+                    )
+            raise BadPlayerNamesError(msg)
 
-        self.players = players
+
+        self.players = [Player(n, idx) for idx, n in enumerate(player_names)]
 
     def remove(self, to_remove):
         self.elems = self.elems.difference(set(to_remove))
@@ -115,6 +126,9 @@ class Game(object):
         for player in self.players:
             if player.name == name:
                 return player
+
+    def get_player_names(self):
+        return [player.name for player in self.players]
 
     def assert_has_solution(self, elems):
         """
@@ -162,7 +176,7 @@ class Game(object):
         if inplace:
             self.elems =  set(filtered)
         else:
-            return Game(elems=filtered, players=self.players)
+            return Game(elems=filtered, player_names=self.get_player_names())
 
 
     def filter_chain(self, statements, inplace=True, trace=False):
@@ -405,15 +419,6 @@ def sample_elems(domains, n_elems, max_tries=100):
     return sorted(list(set(sample)))
 
     
-def players_from_domains(domains):
-    """Generate one player for each domain 
-
-    >>> domains = [range(10), list('abcdef')]
-    >>> players_from_domains(domains)
-    [Player(name='0', index=0, told=None), Player(name='1', index=1, told=None)]
-    """
-    n_players = len(domains)
-    return [Player(name=str(i), index=i) for i in range(n_players)]
 
 
 def find_game(domains, n_elems, statements, n_trys, seed=123):
@@ -423,8 +428,7 @@ def find_game(domains, n_elems, statements, n_trys, seed=123):
     n_solutions = []
     for _ in range(n_trys):
         elems = sample_elems(domains, n_elems)
-        players = players_from_domains(domains)
-        game = Game(elems, players)
+        game = Game(elems)
 
         my_n_solutions = game.n_solutions(statements)
         if my_n_solutions == 1:
@@ -491,8 +495,8 @@ def knows_cases(cases):
 class Error(Exception):
     pass
 
-class DuplicateNamesError(Error):
-    """Two Player objects passed to Game() have the same name"""
+class BadPlayerNamesError(Error):
+    """Names passed to Game are bad, e.g. contain duplicates"""
     pass
 
 class NoSolutionError(Error):

@@ -5,7 +5,7 @@ import pytest
 
 from cheryl import (Player, Game, Knows, Statement,
                     knows, knows_cases, find_game, sample_elems,
-                    DuplicateNamesError, InvalidStatementError, 
+                    BadPlayerNamesError, InvalidStatementError, 
                     NoGameFoundError, NoSolutionError, TooManyTriesError)
 
 
@@ -19,10 +19,7 @@ def player1_told2():
 @pytest.fixture
 def game():
     elems = [(0, 3, 1), (1, 4, 3), (4, 3, 1)]
-    players = [Player(name='0', index=0), 
-               Player(name='1', index=1),
-               Player(name='2', index=2)]
-    g = Game(elems, players) 
+    g = Game(elems) 
 
     return g
 
@@ -35,10 +32,7 @@ def bigger_game():
              (5, 1, 8), (5, 4, 1)
              ]
 
-    players = [Player(name='0', index=0), 
-               Player(name='1', index=1),
-               Player(name='2', index=2)]
-    game = Game(elems, players) 
+    game = Game(elems) 
 
     return game
 
@@ -69,7 +63,7 @@ def test_original_game():
         (8, 14), (8, 15), (8, 17)
     ]
 
-    g = Game(elems, players=[Player('0', 0), Player('1', 1)])
+    g = Game(elems)
 
     statement1 = Statement(
             author='0', 
@@ -102,7 +96,7 @@ def test_original_game_filter_chain():
         (8, 14), (8, 15), (8, 17)
     ]
 
-    g = Game(elems, players=[Player('0', 0), Player('1', 1)])
+    g = Game(elems)
 
     statement1 = Statement(
             author='0', 
@@ -196,12 +190,16 @@ def test_view_no_sort(player1_told2):
 def test_game_duplicate_names_error():
 
     elems = [(0, 3, 1), (1, 4, 3), (4, 3, 1)]
-    players = [Player(name='0', index=0), 
-               Player(name='0', index=1),
-               Player(name='2', index=2)]
 
-    with pytest.raises(DuplicateNamesError):
-        g = Game(elems, players) 
+    with pytest.raises(BadPlayerNamesError):
+        g = Game(elems, player_names=['jim', 'jim', 'jack']) 
+
+def test_game_player_names_wrong_length():
+
+    elems = [(0, 3, 1), (1, 4, 3), (4, 3, 1)]
+
+    with pytest.raises(BadPlayerNamesError):
+        g = Game(elems, player_names=['jim', 'jack']) 
 
 def test_game_has_solution_before_telling(game):
 
@@ -324,8 +322,7 @@ def test_filter_all(bigger_game):
 
 def test_game_get_solution(solution_elems):
 
-    players = [Player('0', 0), Player('1', 1), Player('2', 2)]
-    game = Game(solution_elems, players)
+    game = Game(solution_elems)
 
     statements = [Statement(author='0', conditions={'0': Knows.yes}),
                   Statement(author='1', conditions={'1': Knows.yes}),
@@ -351,10 +348,7 @@ def test_statement_true_for_nobody_knows():
              (4, 0, 2), (4, 1, 0), (4, 2, 9),
              (5, 1, 8), (5, 4, 1)
              ]
-    players = [Player(name='0', index=0), 
-               Player(name='1', index=1),
-               Player(name='2', index=2)]
-    game = Game(elems, players) 
+    game = Game(elems) 
 
     cand = (0, 1, 3)
     teller_name = '0'
@@ -433,10 +427,8 @@ def test_statement_true_for_somebody_knows():
              (2, 1, 6), (4, 0, 2), (4, 1, 0), (4, 2, 9),
              (5, 1, 8), (5, 4, 1)
              ]
-    players = [Player(name='0', index=0), 
-               Player(name='1', index=1),
-               Player(name='2', index=2)]
-    game = Game(elems, players) 
+
+    game = Game(elems) 
 
     cand = (2, 1, 6)
 
@@ -519,10 +511,7 @@ def test_matches_statement_at_least_one():
              (4, 0, 2), (4, 1, 0), (4, 2, 9),
              (5, 1, 8), (5, 4, 1)
              ]
-    players = [Player(name='0', index=0), 
-               Player(name='1', index=1),
-               Player(name='2', index=2)]
-    game = Game(elems, players) 
+    game = Game(elems) 
 
     cand = (2, 1, 6)
     teller_name = '0' 
@@ -552,10 +541,7 @@ def test_matches_statement_at_least_one_maybe():
              (4, 0, 2), (4, 1, 0), (4, 2, 9),
              (5, 1, 8), (5, 4, 1)
              ]
-    players = [Player(name='0', index=0), 
-               Player(name='1', index=1),
-               Player(name='2', index=2)]
-    game = Game(elems, players) 
+    game = Game(elems) 
 
     cand = (4, 1, 0)
     teller_name = '0' 
