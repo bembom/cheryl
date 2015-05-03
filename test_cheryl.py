@@ -2,9 +2,9 @@ from copy import copy
 
 import pytest 
 
-from cheryl import (Player, Game, Knows, 
+from cheryl import (Player, Game, Knows, Statement,
                     knows, knows_cases,
-                    DuplicateNamesError, InvalidStateError)
+                    DuplicateNamesError, InvalidStatementError, NoSolutionError)
 
 import cheryl
 
@@ -40,6 +40,90 @@ def bigger_game():
     game = Game(elems, players) 
 
     return game
+
+@pytest.fixture
+def elems():
+    elems = [(0, 1, 3), (0, 5, 0), 
+             (1, 2, 3), (1, 4, 2), (1, 8, 4),
+             (2, 1, 6), (2, 7, 9),
+             (4, 0, 2), (4, 1, 0), (4, 2, 9),
+             (5, 1, 8), (5, 4, 1)
+             ]
+    return elems
+
+
+def test_original_game():
+    """The original game from Singapore"""
+
+    elems = [
+        (5, 15), (5, 16), (5, 19),
+        (6, 17), (6, 18),
+        (7, 14), (7, 16),
+        (8, 14), (8, 15), (8, 17)
+    ]
+
+    g = Game(elems, players=[Player('0', 0), Player('1', 1)])
+
+    statement1 = Statement(
+            author='0', 
+            conditions={'0': Knows.no, '1': Knows.no}
+            )
+    g.filter(statement1)
+    assert g.elems ==set([(7, 14), (7, 16), (8, 14), (8, 15), (8, 17)])
+
+    statement2 = Statement(
+            author='1', 
+            conditions={'1': Knows.yes}
+            )
+    g.filter(statement2)
+    assert g.elems == set([(7, 16), (8, 15), (8, 17)])
+
+    statement3 = Statement(
+            author='0', 
+            conditions={'0': Knows.yes}
+            )
+    g.filter(statement3)
+    assert g.elems == set([(7, 16)])
+
+
+def test_original_game_filter_chain():
+
+    elems = [
+        (5, 15), (5, 16), (5, 19),
+        (6, 17), (6, 18),
+        (7, 14), (7, 16),
+        (8, 14), (8, 15), (8, 17)
+    ]
+
+    g = Game(elems, players=[Player('0', 0), Player('1', 1)])
+
+    statement1 = Statement(
+            author='0', 
+            conditions={'0': Knows.no, '1': Knows.no}
+            )
+    statement2 = Statement(
+            author='1', 
+            conditions={'1': Knows.yes}
+            )
+    statement3 = Statement(
+            author='0', 
+            conditions={'0': Knows.yes}
+            )
+
+    g.filter_chain([statement1, statement2, statement3])
+    assert g.elems == set([(7, 16)])
+
+def test_player_would_know_yes(player1_told2, elems):
+
+    obs = player1_told2.would_know(truths=[(2, 7, 9)],
+                                   elems=elems)
+    assert obs == Knows.yes
+
+def test_player_would_know_no(player1_told2, elems):
+
+    obs = player1_told2.would_know(truths=[(2, 7, 9)],
+                                   elems=elems)
+    assert obs == Knows.yes
 
 def test_player_has_solution(player1_told2):
 
@@ -125,7 +209,7 @@ def test_game_has_solution_after_telling(game):
 def test_game_has_no_solution(game):
 
     game.tell((0, 5, 1))
-    with pytest.raises(InvalidStateError):
+    with pytest.raises(NoSolutionError):
         game.assert_has_solution(game.elems)
 
 def test_game_get_player(game):
@@ -177,8 +261,43 @@ def test_knows_cases_maybe():
 
     assert knows_cases([Knows.yes, Knows.no]) == Knows.maybe
 
+def test_filter_empty(bigger_game):
 
-def test_matches_statement_nobody_knows():
+    author = '0' 
+    conditions = {'0': Knows.yes}
+
+    with pytest.raises(NoSolutionError):
+        bigger_game.filter(Statement(author, conditions))
+
+def test_filter_subset(bigger_game):
+
+    author = '1'
+    conditions = {'1': Knows.yes}
+    bigger_game.filter(Statement(author, conditions))
+    exp =[(4, 0, 2), (0, 5, 0), (2, 7, 9), (1, 8, 4)] 
+    assert bigger_game.elems == set(exp)
+
+def test_filter_all(bigger_game):
+
+    all_elems = copy(bigger_game.elems)
+    author = '0'
+    conditions = {'0': Knows.no}
+    bigger_game.filter(Statement(author, conditions))
+    assert bigger_game.elems == set(all_elems)
+    
+
+
+
+
+def test_statement_author_in_tuple():
+
+    author = '0' 
+    conditions = {('0', '1', '2'): Knows.maybe}
+    with pytest.raises(InvalidStatementError):
+        assert Statement(author, conditions)
+
+
+def test_statement_true_for_nobody_knows():
 
     elems = [(0, 1, 3), (0, 5, 0), 
              (1, 2, 3), (1, 4, 2), (1, 8, 4),
@@ -194,59 +313,159 @@ def test_matches_statement_nobody_knows():
     cand = (0, 1, 3)
     teller_name = '0'
 
-    statement = {'0': Knows.no, '1': Knows.maybe, '2': Knows.no}
-    assert game.matches_statement(cand, statement, teller_name)
+    conditions = {'0': Knows.no, '1': Knows.maybe, '2': Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert statement.true_for(cand, game)
     
-    statement = {'1': Knows.maybe, '2': Knows.no}
-    assert game.matches_statement(cand, statement, teller_name)
+    conditions = {'1': Knows.maybe, '2': Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert statement.true_for(cand, game)
 
-    statement = {'0': Knows.no}
-    assert game.matches_statement(cand, statement, teller_name)
+    conditions = {'0': Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert statement.true_for(cand, game)
 
     # player 0 is wrong
-    statement = {'0': Knows.yes, '1': Knows.maybe, '2': Knows.no}
-    assert not game.matches_statement(cand, statement, teller_name)
+    conditions = {'0': Knows.yes, '1': Knows.maybe, '2': Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
     
-    statement = {'0': Knows.maybe, '1': Knows.maybe, '2': Knows.no}
-    assert not game.matches_statement(cand, statement, teller_name)
+    conditions = {'0': Knows.maybe, '1': Knows.maybe, '2': Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
 
     # player 1 is wrong
-    statement = {'0': Knows.no, '1': Knows.yes, '2': Knows.no}
-    assert not game.matches_statement(cand, statement, teller_name)
+    conditions = {'0': Knows.no, '1': Knows.yes, '2': Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
 
-    statement = {'0': Knows.no, '1': Knows.no, '2': Knows.no}
-    assert not game.matches_statement(cand, statement, teller_name)
+    conditions = {'0': Knows.no, '1': Knows.no, '2': Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
 
     # player 2 is wrong
-    statement = {'0': Knows.no, '1': Knows.maybe, '2': Knows.yes}
-    assert not game.matches_statement(cand, statement, teller_name)
+    conditions = {'0': Knows.no, '1': Knows.maybe, '2': Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
 
-    statement = {'0': Knows.no, '1': Knows.maybe, '2': Knows.maybe}
-    assert not game.matches_statement(cand, statement, teller_name)
+    conditions = {'0': Knows.no, '1': Knows.maybe, '2': Knows.maybe}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
 
     # player 1 is wrong
-    statement = {'1': Knows.yes, '2': Knows.no}
-    assert not game.matches_statement(cand, statement, teller_name)
+    conditions = {'1': Knows.yes, '2': Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
 
-    statement = {'1': Knows.no, '2': Knows.no}
-    assert not game.matches_statement(cand, statement, teller_name)
+    conditions = {'1': Knows.no, '2': Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
 
     # player 2 is wrong
-    statement = {'1': Knows.maybe, '2': Knows.yes}
-    assert not game.matches_statement(cand, statement, teller_name)
+    conditions = {'1': Knows.maybe, '2': Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
 
-    statement = {'1': Knows.maybe, '2': Knows.maybe}
-    assert not game.matches_statement(cand, statement, teller_name)
+    conditions = {'1': Knows.maybe, '2': Knows.maybe}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
 
     # player 0 is wrong
-    statement = {'0': Knows.yes}
-    assert not game.matches_statement(cand, statement, teller_name)
+    conditions = {'0': Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
 
-    statement = {'0': Knows.maybe}
-    assert not game.matches_statement(cand, statement, teller_name)
+    conditions = {'0': Knows.maybe}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
 
 
-def test_matches_statement_somebody_knows():
+def test_statement_true_for_somebody_knows():
+
+    elems = [(0, 1, 3), (0, 5, 0), 
+             (1, 2, 3), (1, 4, 2), (1, 8, 4),
+             (2, 1, 6), (4, 0, 2), (4, 1, 0), (4, 2, 9),
+             (5, 1, 8), (5, 4, 1)
+             ]
+    players = [Player(name='0', index=0), 
+               Player(name='1', index=1),
+               Player(name='2', index=2)]
+    game = Game(elems, players) 
+
+    cand = (2, 1, 6)
+
+    conditions = {'0': Knows.yes, '1': Knows.no, '2': Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert statement.true_for(cand, game)
+
+    conditions = {'1': Knows.no, '2': Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert statement.true_for(cand, game)
+
+    conditions = {'2': Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert statement.true_for(cand, game)
+
+    # player 0 is wrong
+    conditions = {'0': Knows.maybe, '1': Knows.no, '2': Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
+
+    conditions = {'0': Knows.no, '1': Knows.no, '2': Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
+
+    # player 1 is wrong
+    conditions = {'0': Knows.yes, '1': Knows.yes, '2': Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
+
+    conditions = {'0': Knows.yes, '1': Knows.maybe, '2': Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
+
+    # player 2 is wrong
+    conditions = {'0': Knows.yes, '1': Knows.no, '2': Knows.maybe}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
+    
+    conditions = {'0': Knows.yes, '1': Knows.no, '2': Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
+
+    # all wrong
+    conditions = {'0': Knows.no, '1': Knows.yes, '2': Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
+
+    # player 1 is wrong
+    conditions = {'1': Knows.yes, '2': Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
+
+    conditions = {'1': Knows.maybe, '2': Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
+
+    # player 2 is wrong
+    conditions = {'1': Knows.no, '2': Knows.maybe}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
+
+    conditions = {'1': Knows.no, '2': Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
+
+    # player 2 is wrong
+    conditions = {'2': Knows.maybe}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
+
+    conditions = {'2': Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
+
+def test_matches_statement_at_least_one():
 
     elems = [(0, 1, 3), (0, 5, 0), 
              (1, 2, 3), (1, 4, 2), (1, 8, 4),
@@ -262,86 +481,54 @@ def test_matches_statement_somebody_knows():
     cand = (2, 1, 6)
     teller_name = '0' 
 
-    statement = {'0': Knows.yes, '1': Knows.no, '2': Knows.yes}
-    assert game.matches_statement(cand, statement, teller_name)
+    conditions = {'0': Knows.yes, '1': Knows.no, '2': Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert statement.true_for(cand, game)
 
-    statement = {'1': Knows.no, '2': Knows.yes}
-    assert game.matches_statement(cand, statement, teller_name)
+    conditions = {'0': Knows.yes, ('1', '2'): Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert statement.true_for(cand, game)
 
-    statement = {'2': Knows.yes}
-    assert game.matches_statement(cand, statement, teller_name)
+    conditions = {'0': Knows.yes, ('1', '2'): Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert statement.true_for(cand, game)
 
-    # player 0 is wrong
-    statement = {'0': Knows.maybe, '1': Knows.no, '2': Knows.yes}
-    assert not game.matches_statement(cand, statement, teller_name)
-
-    statement = {'0': Knows.no, '1': Knows.no, '2': Knows.yes}
-    assert not game.matches_statement(cand, statement, teller_name)
-
-    # player 1 is wrong
-    statement = {'0': Knows.yes, '1': Knows.yes, '2': Knows.yes}
-    assert not game.matches_statement(cand, statement, teller_name)
-
-    statement = {'0': Knows.yes, '1': Knows.maybe, '2': Knows.yes}
-    assert not game.matches_statement(cand, statement, teller_name)
-
-    # player 2 is wrong
-    statement = {'0': Knows.yes, '1': Knows.no, '2': Knows.maybe}
-    assert not game.matches_statement(cand, statement, teller_name)
-    
-    statement = {'0': Knows.yes, '1': Knows.no, '2': Knows.no}
-    assert not game.matches_statement(cand, statement, teller_name)
-
-    # all wrong
-    statement = {'0': Knows.no, '1': Knows.yes, '2': Knows.no}
-    assert not game.matches_statement(cand, statement, teller_name)
-
-    # player 1 is wrong
-    statement = {'1': Knows.yes, '2': Knows.yes}
-    assert not game.matches_statement(cand, statement, teller_name)
-
-    statement = {'1': Knows.maybe, '2': Knows.yes}
-    assert not game.matches_statement(cand, statement, teller_name)
-
-    # player 2 is wrong
-    statement = {'1': Knows.no, '2': Knows.maybe}
-    assert not game.matches_statement(cand, statement, teller_name)
-
-    statement = {'1': Knows.no, '2': Knows.no}
-    assert not game.matches_statement(cand, statement, teller_name)
-
-    # player 2 is wrong
-    statement = {'2': Knows.maybe}
-    assert not game.matches_statement(cand, statement, teller_name)
-
-    statement = {'2': Knows.no}
-    assert not game.matches_statement(cand, statement, teller_name)
+    conditions = {'0': Knows.yes, ('1', '2'): Knows.maybe}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
 
 
-def test_filter_elems_empty(bigger_game):
+def test_matches_statement_at_least_one_maybe():
 
+    elems = [(0, 1, 3), (0, 5, 0), 
+             (1, 2, 3), (1, 4, 2), (1, 8, 4),
+             (2, 1, 6), 
+             (4, 0, 2), (4, 1, 0), (4, 2, 9),
+             (5, 1, 8), (5, 4, 1)
+             ]
+    players = [Player(name='0', index=0), 
+               Player(name='1', index=1),
+               Player(name='2', index=2)]
+    game = Game(elems, players) 
+
+    cand = (4, 1, 0)
     teller_name = '0' 
-    statement = {'0': Knows.yes}
 
-    with pytest.raises(InvalidStateError):
-        bigger_game.filter_elems(statement, teller_name)
+    conditions = {'0': Knows.no, '1': Knows.maybe, '2': Knows.maybe}
+    statement = Statement(author='0', conditions=conditions)
+    assert statement.true_for(cand, game)
 
-def test_filter_elems_subset(bigger_game):
+    conditions = {'0': Knows.no, ('1', '2'):  Knows.maybe}
+    statement = Statement(author='0', conditions=conditions)
+    assert statement.true_for(cand, game)
 
-    teller_name = '1'
-    statement = {'1': Knows.yes}
-    bigger_game.filter_elems(statement, teller_name)
-    exp =[(4, 0, 2), (0, 5, 0), (2, 7, 9), (1, 8, 4)] 
-    assert bigger_game.elems == set(exp)
+    conditions = {'0': Knows.no, ('1', '2'):  Knows.no}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
 
-def test_filter_elems_all(bigger_game):
-
-    all_elems = copy(bigger_game.elems)
-    teller_name = '0'
-    statement = {'0': Knows.no}
-    bigger_game.filter_elems(statement, teller_name)
-    assert bigger_game.elems == set(all_elems)
-    
+    conditions = {'0': Knows.no, ('1', '2'):  Knows.yes}
+    statement = Statement(author='0', conditions=conditions)
+    assert not statement.true_for(cand, game)
 
 
 

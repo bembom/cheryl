@@ -36,8 +36,45 @@ class Player(object):
         return len(possible) > 0 
 
     def get_compatible(self, truth, elems):
+        """Given a possible truth, get all elements that would be compatible
 
+        Parameters
+        ----------
+        truth: tuple
+            The element to be considered as the possible truth.
+        elems: list of tuples
+            All elements that are still in play.
+
+        This is from the perspective of another player, that is, it ignores the
+        specific information the player has been told and only makes use of
+        knowing which part of the tuple the player has been told.
+        """
         return [e for e in elems if e[self.index] == truth[self.index]]
+
+    def would_know(self, truths, elems):
+        """Given a list of possible truths, would the player know the solution? 
+
+        This is from the perspective of another player, that is, it ignores the
+        specific information the player has been told and only makes use of
+        knowing which part of the tuple the player has been told.
+
+        Parameters
+        ----------
+        truths: list of tuples
+            The elements that will be considered as possible values for the
+            truth.
+        elems: list of tuples
+            All elements that are still in play.
+
+        """
+
+        cases = []
+        for elem in truths:
+            compatibles = self.get_compatible(truth=elem, elems=elems)
+            cases.append(knows(compatibles))
+
+        return knows_cases(cases)
+
 
     def _format(self, elem):
         border = '|' if self.matches(elem) else ' '
@@ -76,71 +113,89 @@ class Game(object):
                 return player
 
     def assert_has_solution(self, elems):
+        """
+
+        Raises
+        ------
+        NoSolutionError
+        """
 
         for player in self.players:
             if not player.has_solution(elems):
                 msg = "No solution for player {}".format(player.name)   
-                raise InvalidStateError(msg)
+                raise NoSolutionError(msg)
 
 
-    def matches_statement(self, cand, statement, teller_name):
+    def filter(self, statement, inplace=True):
         """
 
         Parameters
         ----------
-        cand: tuple
-            The candidate element for which to evaluate the statement.
-        statement: dict str -> Knows
-            Does each player know, not know, or maybe know? A dictionary mapping
-            player names to Knows enum values. If a player's name does not appear
-            in this dict, no statement about that player's knowledge is made.
-        teller_name: str
-            The name of the player who is making this statement.
+        statement: Statement
+            The statement to filter the elements by.
+        inplace: bool
+            Should the Game object be updated in place with the new, filtered
+            elements? Otherwise return a new Game object based on the filtered
+            elements.
 
         Returns
         -------
-        bool
+        None if inplace is True, a Game object otherwise.
+
+        Raises
+        ------
+        NoSolutionError
+
         """
-
-        teller  = self.get_player(teller_name)
-        teller_compatible = teller.get_compatible(truth=cand, elems=self.elems)
-
-        if (teller.name in statement and
-            knows(teller_compatible) != statement[teller.name]):
-            return False
-
-
-        for name, expected in statement.items():
-
-            if name == teller_name:
-                continue
-
-            player = self.get_player(name)
-
-            cases = []
-            for elem in teller_compatible:
-                player_compatible = player.get_compatible(truth=elem, 
-                                                         elems=self.elems)
-                cases.append(knows(player_compatible))
-
-            if knows_cases(cases) != statement[name]:
-                return False
-
-        return True
-
-
-    def filter_elems(self, statement, teller_name):
 
         filtered = []
         for elem in self.elems:
-            if self.matches_statement(elem, statement, teller_name):
+            if statement.true_for(cand=elem, game=self):
                 filtered.append(elem)
 
         self.assert_has_solution(filtered)
 
-        self.elems =  set(filtered)
+        if inplace:
 
-        return len(filtered)
+            self.elems =  set(filtered)
+
+        else:
+            return Game(elems=filtered, players=self.players)
+
+
+    def filter_chain(self, statements, inplace=True):
+        """
+
+        Parameters
+        ----------
+        statements: list of Statement
+            The statements to filter the elements by, applied one after
+            another.            
+        inplace: bool
+            Should the Game object be updated in place with the new, filtered
+            elements? Otherwise return a new Game object based on the filtered
+            elements.
+
+        Returns
+        -------
+        None if inplace is True, a Game object otherwise.
+
+        Raises
+        ------
+        NoSolutionError
+
+        """
+
+        if inplace:
+            for statement in statements:
+                self.filter(statement, inplace)
+        
+        else:
+            game = self 
+            for statement in statements:
+                game = game.filter(statement, inplace)
+
+            return game
 
 
     def __repr__(self):
@@ -157,6 +212,94 @@ class Game(object):
         frame.columns = col_names
 
         return repr(frame)
+
+
+class Statement(object):
+
+    def __init__(self, author, conditions):
+        """
+        author: str
+            The name of the player who is making this statement.
+        conditions: dict str -> Knows
+            Does each player know, not know, or maybe know? A dictionary mapping
+            player names to Knows enum values. If a player's name does not appear
+            in this dict, no statement about that player's knowledge is made.
+            If a key is a tuple of strings, the given knowledge state applies
+            to at least one of the players specified in the tuple.
+        """
+        for who, condition in conditions.items():
+
+            if not isinstance(who, tuple):
+                continue
+
+            for name in who:
+                if name == author:
+                    msg = "Author cannot be part of tuple"
+                    raise InvalidStatementError(msg)
+
+        self.author = author
+        self.conditions = conditions
+
+    def true_for(self, cand, game):
+        """
+
+        Parameters
+        ----------
+        cand: tuple
+            The candidate element for which to evaluate the statement.
+        game: Game
+            The game in the context of which the statement is to be evaluated.
+
+        Returns
+        -------
+        bool
+        """
+
+        author  = game.get_player(self.author)
+        author_compatible = author.get_compatible(truth=cand, elems=game.elems)
+
+        if (author.name in self.conditions and
+            knows(author_compatible) != self.conditions[author.name]):
+            return False
+
+        for who, expected in self.conditions.items():
+
+            # already dealt with condition on author
+            if who == author:
+                continue
+
+            # in the case of multiple players, the statement has to be true for
+            # at least one of them
+            if isinstance(who, tuple):
+
+                found_match = False
+                for name in who:
+
+                    player_knowledge = game.get_player(name).would_know(
+                            truths=author_compatible, 
+                            elems=game.elems
+                            ) 
+                    if player_knowledge == expected:
+                        found_match = True
+
+                if not found_match:
+                    return False
+
+            else:
+
+                player = game.get_player(who)
+                player_knowledge = player.would_know(truths=author_compatible, 
+                                                    elems=game.elems) 
+                if player_knowledge != self.conditions[who]:
+                    return False
+
+        return True
+
+    def __repr__(self):
+        return 'Statement(author={author}, conditions={conditions}'.format(
+                author=self.author, 
+                conditions=repr(self.conditions)
+                )
 
 
 class Knows(Enum):
@@ -201,5 +344,8 @@ class Error(Exception):
 class DuplicateNamesError(Error):
     pass
 
-class InvalidStateError(Error):
+class NoSolutionError(Error):
+    pass
+
+class InvalidStatementError(Error):
     pass
