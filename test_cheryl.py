@@ -1,10 +1,12 @@
 from copy import copy
 
+import numpy as np
 import pytest 
 
 from cheryl import (Player, Game, Knows, Statement,
-                    knows, knows_cases,
-                    DuplicateNamesError, InvalidStatementError, NoSolutionError)
+                    knows, knows_cases, find_game, sample_elems,
+                    DuplicateNamesError, InvalidStatementError, 
+                    NoGameFoundError, NoSolutionError, TooManyTriesError)
 
 import cheryl
 
@@ -51,6 +53,13 @@ def elems():
              ]
     return elems
 
+@pytest.fixture
+def solution_elems():
+    elems = [(1931, 1, 18), (1931, 10, 14), (1930, 5, 10), (1939, 5, 12),
+             (1936, 1, 12), (1933, 4, 17), (1931, 2, 17), (1932, 1, 13), 
+             (1936, 1, 14), (1932, 10, 17)]
+
+    return elems
 
 def test_original_game():
     """The original game from Singapore"""
@@ -241,6 +250,35 @@ def test_game_tell(game):
     assert game.players[1].told == 4
     assert game.players[2].told == 3
 
+def test_game_n_solutions_0(bigger_game):
+    statements = [Statement(author='0', conditions={'0': Knows.yes})]
+    assert bigger_game.n_solutions(statements) == 0
+    
+
+def test_game_n_solutions_1(bigger_game):
+    statements = [Statement(author='1', 
+                            conditions={'1': Knows.yes, '2': Knows.yes})]
+    assert bigger_game.n_solutions(statements) == 1
+
+
+def test_game_n_solutions_many(bigger_game):
+    statements = [Statement(author='0', 
+                            conditions={'0': Knows.no, '1': Knows.maybe})]
+    assert bigger_game.n_solutions(statements) == 10 
+
+def test_game_n_solutions_two_statements(bigger_game):
+    statements = [Statement(author='0', conditions={'0': Knows.no}),
+                  Statement(author='1', conditions={'1': Knows.no}),
+                  Statement(author='2', conditions={'2': Knows.no})]
+    assert bigger_game.n_solutions(statements) == 2
+
+def test_game_n_solutions_no_side_effects(bigger_game):
+    n_elems = len(bigger_game.elems)
+    statements = [Statement(author='0', conditions={'0': Knows.no})]
+    assert bigger_game.n_solutions(statements) == 12 
+
+    assert len(bigger_game.elems) == n_elems
+
 def test_knows_yes():
 
     assert knows([(1, 3, 4)]) == Knows.yes
@@ -286,6 +324,16 @@ def test_filter_all(bigger_game):
     assert bigger_game.elems == set(all_elems)
     
 
+def test_game_get_solution(solution_elems):
+
+    players = [Player('0', 0), Player('1', 1), Player('2', 2)]
+    game = Game(solution_elems, players)
+
+    statements = [Statement(author='0', conditions={'1': Knows.yes}),
+                  Statement(author='1', conditions={'1': Knows.yes}),
+                  Statement(author='2', conditions={'2': Knows.yes})]
+
+    assert game.get_solution(statements) == (1933, 4, 17)
 
 
 
@@ -530,6 +578,39 @@ def test_matches_statement_at_least_one_maybe():
     statement = Statement(author='0', conditions=conditions)
     assert not statement.true_for(cand, game)
 
+def test_find_game_succeeds(solution_elems):
 
+    np.random.seed(123)
+
+    domains = [range(1930, 1940), range(1, 13), range(10, 20)]
+    n_elems = 10
+    statements = [Statement(author='0', conditions={'0': Knows.yes}),
+                  Statement(author='1', conditions={'1': Knows.yes}),
+                  Statement(author='2', conditions={'2': Knows.yes})]
+    game = find_game(domains, n_elems, statements, n_trys=100)
+
+    assert game.elems == set(solution_elems)
+
+    assert game.get_solution(statements) == (1933, 4, 17)
+     
+
+def test_find_game_fails():
+
+    np.random.seed(123)
+
+    domains = [range(1930, 1940), range(1, 13), range(10, 20)]
+    n_elems = 10
+    statements = [Statement(author='0', conditions={'0': Knows.no}),
+                  Statement(author='1', conditions={'1': Knows.no}),
+                  Statement(author='2', conditions={'2': Knows.no})]
+
+    with pytest.raises(NoGameFoundError):
+        game = find_game(domains, n_elems, statements, n_trys=100)
+
+def test_sample_elems_fails():
+
+    domains = [[0, 1], ['a', 'b']]
+    with pytest.raises(TooManyTriesError):
+        sample_elems(domains, 5)
 
 

@@ -1,7 +1,10 @@
+from enum import Enum
+from collections import Counter
+from functools import partial
 from operator import itemgetter
 
+import numpy as np
 import pandas as pd
-from enum import Enum
 
 
 class Player(object):
@@ -85,7 +88,10 @@ class Player(object):
             )
 
     def __repr__(self):
-        return 'Player(index={}, told={})'.format(self.index, self.told)
+        return "Player(name='{name}', index={index}, told={told})".format(
+                name=self.name,
+                index=self.index, 
+                told=self.told)
 
 
 class Game(object):
@@ -156,14 +162,12 @@ class Game(object):
         self.assert_has_solution(filtered)
 
         if inplace:
-
             self.elems =  set(filtered)
-
         else:
             return Game(elems=filtered, players=self.players)
 
 
-    def filter_chain(self, statements, inplace=True):
+    def filter_chain(self, statements, inplace=True, trace=False):
         """
 
         Parameters
@@ -188,14 +192,46 @@ class Game(object):
 
         if inplace:
             for statement in statements:
-                self.filter(statement, inplace)
+                self.filter(statement, inplace=True)
+                if trace:
+                    print(repr(self))
         
         else:
             game = self 
             for statement in statements:
-                game = game.filter(statement, inplace)
+                game = game.filter(statement, inplace=False)
+                if trace:
+                    print(repr(game))
 
             return game
+
+    def n_solutions(self, statements):
+        """How many elements are compatible with a list of Statements?
+
+        Parameters
+        ----------
+        statements: list of Statement
+            The statements to filter the elements by, applied one after
+            another.            
+
+        """
+
+        try:
+            game = self.filter_chain(statements, inplace=False)
+            n_solutions = len(game.elems)
+        except NoSolutionError as e:
+            n_solutions = 0
+
+        return n_solutions
+
+    def get_solution(self, statements, trace=False):
+
+        game = self.filter_chain(statements, inplace=False, trace=trace)
+        if len(game.elems) > 1:
+            msg = "Found {} solutions".format(len(game.elems))
+            raise MultipleSolutionsError(msg)
+
+        return list(game.elems)[0]
 
 
     def __repr__(self):
@@ -302,6 +338,72 @@ class Statement(object):
                 )
 
 
+    n_elems = 20
+    domains = [range(10), range(10, 20), range(20, 30)]
+
+def sample_elems(domains, n_elems, max_tries=100):
+    """
+    >>> np.random.seed(123)
+    >>> domains = [range(10), range(10, 20), range(20, 30)]
+    >>> sample_elems(domains, 5)
+    [(1, 10, 29), (2, 16, 20), (2, 19, 29), (3, 11, 23), (6, 11, 20)]
+    >>> domains = [list('abcdef'), range(6)]
+    >>> sample_elems(domains, 3)
+    [('a', 1), ('e', 4), ('f', 0)]
+    >>> domains = [[0, 1], ['a', 'b']]
+    >>> sample_elems(domains, 4)
+    [(0, 'a'), (0, 'b'), (1, 'a'), (1, 'b')]
+    """
+
+    sample = []
+    n_unique = 0
+    n_tries = 0
+    while n_unique != n_elems:
+
+        n_tries += 1
+        if n_tries > max_tries:
+            raise TooManyTriesError()
+
+        choose = partial(np.random.choice, size=n_elems - n_unique) 
+        elems = map(choose, domains)
+        sample.extend(list(zip(*elems)))
+
+        n_unique = len(set(sample))
+
+    return sorted(list(set(sample)))
+
+    
+def players_from_domains(domains):
+    """Generate one player for each domain 
+
+    >>> domains = [range(10), list('abcdef')]
+    >>> players_from_domains(domains)
+    [Player(name='0', index=0, told=None), Player(name='1', index=1, told=None)]
+    """
+    n_players = len(domains)
+    return [Player(name=str(i), index=i) for i in range(n_players)]
+
+
+def find_game(domains, n_elems, statements, n_trys):
+
+    n_solutions = []
+    for _ in range(n_trys):
+        elems = sample_elems(domains, n_elems)
+        players = players_from_domains(domains)
+        game = Game(elems, players)
+
+        my_n_solutions = game.n_solutions(statements)
+        if my_n_solutions == 1:
+            return game
+
+        n_solutions.append(my_n_solutions)
+
+    msg = repr(Counter(n_solutions))
+    raise NoGameFoundError(msg)
+
+
+
+
 class Knows(Enum):
 
     no = -1
@@ -321,11 +423,27 @@ def knows(compatible):
     Returns
     -------
     Knows enum
+
+    >>> knows([(1, 2, 3), (4, 5, 6)])
+    <Knows.no: -1>
+    >>> knows([(1, 2, 3)])
+    <Knows.yes: 1>
     """
     return Knows.yes if len(compatible) == 1 else Knows.no
 
 
 def knows_cases(cases):
+    """
+
+    >>> knows_cases([Knows.yes, Knows.yes, Knows.yes])
+    <Knows.yes: 1>
+    >>> knows_cases([Knows.yes, Knows.no, Knows.yes])
+    <Knows.maybe: 0>
+    >>> knows_cases([Knows.maybe, Knows.no, Knows.yes])
+    <Knows.maybe: 0>
+    >>> knows_cases([Knows.no, Knows.no, Knows.no])
+    <Knows.no: -1>
+    """
 
     assert all([isinstance(case, Knows) for case in cases])
 
@@ -342,10 +460,21 @@ class Error(Exception):
     pass
 
 class DuplicateNamesError(Error):
+    """Two Player objects passed to Game() have the same name"""
     pass
 
 class NoSolutionError(Error):
+    """A Game has reached a state without a solution for at least one Player"""
     pass
 
 class InvalidStatementError(Error):
+    """A Statement cannot be created because it is invalid"""
+    pass
+
+class NoGameFoundError(Error):
+    """Could not find a feasible game for the given Statements"""
+    pass
+
+class TooManyTriesError(Error):
+    """Too many tries in finding a sample of elements"""
     pass
