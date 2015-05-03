@@ -1,6 +1,6 @@
 from copy import copy
+import random
 
-import numpy as np
 import pytest 
 
 from cheryl import (Player, Game, Knows, Statement,
@@ -55,10 +55,9 @@ def elems():
 
 @pytest.fixture
 def solution_elems():
-    elems = [(1931, 1, 18), (1931, 10, 14), (1930, 5, 10), (1939, 5, 12),
-             (1936, 1, 12), (1933, 4, 17), (1931, 2, 17), (1932, 1, 13), 
-             (1936, 1, 14), (1932, 10, 17)]
-
+    elems = [(1935, 3, 18), (1932, 3, 17), (1938, 12, 12), (1936, 7, 14),
+             (1934, 11, 15), (1938, 8, 15), (1935, 7, 16), (1938, 2, 10),
+             (1932, 1, 10), (1934, 10, 17)]
     return elems
 
 def test_original_game():
@@ -329,11 +328,11 @@ def test_game_get_solution(solution_elems):
     players = [Player('0', 0), Player('1', 1), Player('2', 2)]
     game = Game(solution_elems, players)
 
-    statements = [Statement(author='0', conditions={'1': Knows.yes}),
+    statements = [Statement(author='0', conditions={'0': Knows.yes}),
                   Statement(author='1', conditions={'1': Knows.yes}),
                   Statement(author='2', conditions={'2': Knows.yes})]
 
-    assert game.get_solution(statements) == (1933, 4, 17)
+    assert game.get_solution(statements) == (1936, 7, 14)
 
 
 
@@ -580,7 +579,7 @@ def test_matches_statement_at_least_one_maybe():
 
 def test_find_game_succeeds(solution_elems):
 
-    np.random.seed(123)
+    random.seed(123)
 
     domains = [range(1930, 1940), range(1, 13), range(10, 20)]
     n_elems = 10
@@ -591,12 +590,12 @@ def test_find_game_succeeds(solution_elems):
 
     assert game.elems == set(solution_elems)
 
-    assert game.get_solution(statements) == (1933, 4, 17)
+    assert game.get_solution(statements) == (1936, 7, 14)
      
 
 def test_find_game_fails():
 
-    np.random.seed(123)
+    random.seed(123)
 
     domains = [range(1930, 1940), range(1, 13), range(10, 20)]
     n_elems = 10

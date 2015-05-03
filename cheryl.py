@@ -2,8 +2,8 @@ from enum import Enum
 from collections import Counter
 from functools import partial
 from operator import itemgetter
+import random
 
-import numpy as np
 import pandas as pd
 
 
@@ -341,15 +341,38 @@ class Statement(object):
     n_elems = 20
     domains = [range(10), range(10, 20), range(20, 30)]
 
+
+def choose_k(k):
+    """
+    Would be nice to use numpy.random.choice here, but will avoid adding numpy
+    as a dependency.
+
+    Parameters
+    ----------
+    k: int
+        The number of elements to choose.
+
+    Returns
+    -------
+    Function
+    """
+
+    def choose_func(choices):
+        return [random.choice(choices) for _ in range(k)]
+
+    return choose_func 
+
+
+
 def sample_elems(domains, n_elems, max_tries=100):
     """
-    >>> np.random.seed(123)
+    >>> random.seed(123)
     >>> domains = [range(10), range(10, 20), range(20, 30)]
     >>> sample_elems(domains, 5)
-    [(1, 10, 29), (2, 16, 20), (2, 19, 29), (3, 11, 23), (6, 11, 20)]
+    [(0, 11, 25), (1, 16, 20), (4, 10, 25), (4, 18, 22), (6, 18, 22)]
     >>> domains = [list('abcdef'), range(6)]
     >>> sample_elems(domains, 3)
-    [('a', 1), ('e', 4), ('f', 0)]
+    [('c', 1), ('c', 5), ('e', 1)]
     >>> domains = [[0, 1], ['a', 'b']]
     >>> sample_elems(domains, 4)
     [(0, 'a'), (0, 'b'), (1, 'a'), (1, 'b')]
@@ -364,7 +387,8 @@ def sample_elems(domains, n_elems, max_tries=100):
         if n_tries > max_tries:
             raise TooManyTriesError()
 
-        choose = partial(np.random.choice, size=n_elems - n_unique) 
+        choose = choose_k(n_elems - n_unique)
+
         elems = map(choose, domains)
         sample.extend(list(zip(*elems)))
 
@@ -384,7 +408,9 @@ def players_from_domains(domains):
     return [Player(name=str(i), index=i) for i in range(n_players)]
 
 
-def find_game(domains, n_elems, statements, n_trys):
+def find_game(domains, n_elems, statements, n_trys, seed=123):
+
+    random.seed(seed)
 
     n_solutions = []
     for _ in range(n_trys):
@@ -473,6 +499,10 @@ class InvalidStatementError(Error):
 
 class NoGameFoundError(Error):
     """Could not find a feasible game for the given Statements"""
+    pass
+
+class MultipleSolutionsError(Error):
+    """Found more than one solution for the given Statements"""
     pass
 
 class TooManyTriesError(Error):
