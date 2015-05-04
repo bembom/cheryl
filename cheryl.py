@@ -23,23 +23,23 @@ class Player(object):
         self.name = name
         self.index = index
 
-    def get_compatible(self, truth, elems):
-        """Given a possible truth, get all elements that would be compatible
+    def get_compatible(self, truth, candidates):
+        """Given a possible truth, get all candidates that would be compatible
 
         Parameters
         ----------
         truth: tuple
-            The element to be considered as the possible truth.
-        elems: list of tuples
-            All elements that are still in play.
+            The candidate to be considered as the possible truth.
+        candidates: list of tuples
+            All candidates that are still in play.
 
         Returns
         -------
-        A list of elems that are compatible with this possible truth.
+        A list of candidates that are compatible with this possible truth.
         """
-        return [e for e in elems if e[self.index] == truth[self.index]]
+        return [e for e in candidates if e[self.index] == truth[self.index]]
 
-    def would_know(self, truths, elems):
+    def would_know(self, truths, candidates):
         """Given a list of possible truths, would the player know the solution?
 
         If the player knows the solution for all given truths, then the player
@@ -49,10 +49,10 @@ class Player(object):
         Parameters
         ----------
         truths: list of tuples
-            The elements that will be considered as possible values for the
+            The candidates that will be considered as possible values for the
             truth.
-        elems: list of tuples
-            All elements that are still in play.
+        candidates: list of tuples
+            All candidates that are still in play.
 
         Returns
         -------
@@ -60,28 +60,29 @@ class Player(object):
         """
 
         cases = []
-        for elem in truths:
-            compatibles = self.get_compatible(truth=elem, elems=elems)
+        for truth in truths:
+            compatibles = self.get_compatible(truth=truth, 
+                                              candidates=candidates)
             cases.append(knows(compatibles))
 
         return knows_cases(cases)
 
-    def view(self, elems):
-        """Create a view of a set of elements from this player's perspective
+    def view(self, candidates):
+        """Create a view of a set of candidates from this player's perspective
 
-        Elements are sorted by the dimension this player is told about.
+        Candidates are sorted by the dimension this player is told about.
 
         Parameters
         ----------
-        elems: list of tuples
-            The elements for which to create the view
+        candidates: list of tuples
+            The candidates for which to create the view
 
         Returns
         -------
-        A list of strings, one for each element.
+        A list of strings, one for each candidate.
         """
-        sorted_elems = sorted(elems, key=itemgetter(self.index))
-        return [' '.join([str(e) for e in x]) for x in sorted_elems]
+        sorted_candidates = sorted(candidates, key=itemgetter(self.index))
+        return [' '.join([str(e) for e in cand]) for cand in sorted_candidates]
 
     def __repr__(self):
         return "Player(name='{name}', index={index})".format(
@@ -97,10 +98,10 @@ class Game(object):
 
     Attributes
     ----------
-    elems: list of tuples
-        The elements that Cheryl gives the players to choose from. These are
+    candidates: list of tuples
+        The candidates that Cheryl gives the players to choose from. These are
         tuples, with each part of the tuple being a dimension that one player
-        is told about. As statements are applied to filter out elements that
+        is told about. As statements are applied to filter out candidates that
         incompatible with them, this list shrinks to contain only those that
         are still in play.
     player_names: str
@@ -108,16 +109,18 @@ class Game(object):
         named after the index of the dimension they are told about.
     """
 
-    def __init__(self, elems, player_names=None):
+    def __init__(self, candidates, player_names=None):
 
-        n_players = len(elems[0])
-        self.elems = set(elems)
+        n_players = len(candidates[0])
+        self.candidates = set(candidates)
 
         if player_names is None:
             player_names = [str(i) for i in range(n_players)]
+
         elif len(player_names) != len(set(player_names)):
             msg  = "player_names cannot contain duplicates"
             raise BadPlayerNamesError(msg)
+
         elif len(player_names) != n_players:
             msg = "Expected {exp} names but got {obs}".format(
                     exp=n_players,
@@ -139,19 +142,19 @@ class Game(object):
         return [player.name for player in self.players]
 
     def filter(self, statement):
-        """Filter the elements based on a Statment about player's knowledge
+        """Filter the candidates based on a Statment about player's knowledge
 
-        Raises a NoSolutionError if no elements satisfy the statement.
+        Raises a NoSolutionError if no candidates satisfy the statement.
 
         Parameters
         ----------
         statement: Statement
-            The statement to filter the elements by.
+            The statement to filter the candidates by.
 
         Returns
         -------
-        A new Game object containing only those elements that are compatible with
-        the given statement.
+        A new Game object containing only those candidates that are compatible
+        with the given statement.
 
         Raises
         ------
@@ -159,33 +162,33 @@ class Game(object):
         """
 
         filtered = []
-        for elem in self.elems:
-            if statement.true_for(cand=elem, game=self):
-                filtered.append(elem)
+        for cand in self.candidates:
+            if statement.true_for(cand=cand, game=self):
+                filtered.append(cand)
 
         if not filtered:
-            msg = "No elements found that satisfy the filtering criterion"
+            msg = "No candidates found that satisfy the filtering criterion"
             raise NoSolutionError(msg)
 
-        return Game(elems=filtered, player_names=self.get_player_names())
+        return Game(candidates=filtered, player_names=self.get_player_names())
 
 
     def filter_chain(self, statements, trace=False):
-        """Filter the elements based on a list of Statments
+        """Filter the candidates based on a list of Statments
 
-        Raises a NoSolutionError if no elements satisfy the statements.
+        Raises a NoSolutionError if no candidates satisfy the statements.
 
         Parameters
         ----------
         statements: list of Statement
-            The statements to filter the elements by, applied one after
+            The statements to filter the candidates by, applied one after
             another.
         trace: bool
             If true, print out intermediate values.
 
         Returns
         -------
-        A new Game object containg only elements that are compatible with the
+        A new Game object containg only candidates that are compatible with the
         given Statements.
 
         Raises
@@ -207,12 +210,12 @@ class Game(object):
         return game
 
     def n_solutions(self, statements):
-        """How many elements are compatible with a list of Statements?
+        """How many candidates are compatible with a list of Statements?
 
         Parameters
         ----------
         statements: list of Statement
-            The statements to filter the elements by, applied one after
+            The statements to filter the candidates by, applied one after
             another.
 
         Returns
@@ -222,7 +225,7 @@ class Game(object):
 
         try:
             game = self.filter_chain(statements)
-            n_solutions = len(game.elems)
+            n_solutions = len(game.candidates)
         except NoSolutionError as e:
             n_solutions = 0
 
@@ -237,7 +240,7 @@ class Game(object):
         Parameters
         ----------
         statements: list of Statement
-            The statements to filter the elements by, applied one after
+            The statements to filter the candidates by, applied one after
             another.
         trace: bool
             If true, print out intermediate values.
@@ -252,18 +255,18 @@ class Game(object):
         """
 
         game = self.filter_chain(statements, trace=trace)
-        if len(game.elems) > 1:
-            msg = "Found {} solutions".format(len(game.elems))
+        if len(game.candidates) > 1:
+            msg = "Found {} solutions".format(len(game.candidates))
             raise MultipleSolutionsError(msg)
 
-        return list(game.elems)[0]
+        return list(game.candidates)[0]
 
 
     def __repr__(self):
 
         views = []
         for player in self.players:
-            views.append(player.view(self.elems))
+            views.append(player.view(self.candidates))
 
         width = len(views[0][0])
         col_names = []
@@ -287,7 +290,7 @@ class Statement(object):
     ----------
     author: str
         The name of the player who is making this statement.
-    conditions: dict str -> Knows
+    facts: dict str -> Knows
         Does each player know, not know, or maybe know? A dictionary mapping
         player names to Knows enum values. If a player's name does not appear
         in this dict, no statement about that player's knowledge is made.
@@ -295,8 +298,8 @@ class Statement(object):
         to at least one of the players specified in the tuple.
     """
 
-    def __init__(self, author, conditions):
-        for who, condition in conditions.items():
+    def __init__(self, author, facts):
+        for who, condition in facts.items():
 
             if not isinstance(who, tuple):
                 continue
@@ -307,7 +310,7 @@ class Statement(object):
                     raise InvalidStatementError(msg)
 
         self.author = author
-        self.conditions = conditions
+        self.facts = facts
 
     def true_for(self, cand, game):
         """Is the statement true for a given candidate tuple?
@@ -315,7 +318,7 @@ class Statement(object):
         Parameters
         ----------
         cand: tuple
-            The candidate element for which to evaluate the statement.
+            The candidate tuple for which to evaluate the statement.
         game: Game
             The game in the context of which the statement is to be evaluated.
 
@@ -325,13 +328,14 @@ class Statement(object):
         """
 
         author  = game.get_player(self.author)
-        author_compatible = author.get_compatible(truth=cand, elems=game.elems)
+        author_compatible = author.get_compatible(truth=cand, 
+                                                  candidates=game.candidates)
 
-        if (author.name in self.conditions and
-            knows(author_compatible) != self.conditions[author.name]):
+        if (author.name in self.facts and
+            knows(author_compatible) != self.facts[author.name]):
             return False
 
-        for who, expected in self.conditions.items():
+        for who, expected in self.facts.items():
 
             # already dealt with condition on author
             if who == author:
@@ -346,7 +350,7 @@ class Statement(object):
 
                     player_knowledge = game.get_player(name).would_know(
                             truths=author_compatible,
-                            elems=game.elems
+                            candidates=game.candidates
                             )
                     if player_knowledge == expected:
                         found_match = True
@@ -357,17 +361,19 @@ class Statement(object):
             else:
 
                 player = game.get_player(who)
-                player_knowledge = player.would_know(truths=author_compatible,
-                                                    elems=game.elems)
-                if player_knowledge != self.conditions[who]:
+                player_knowledge = player.would_know(
+                        truths=author_compatible,
+                        candidates=game.candidates
+                        )
+                if player_knowledge != self.facts[who]:
                     return False
 
         return True
 
     def __repr__(self):
-        return 'Statement(author={author}, conditions={conditions}'.format(
+        return 'Statement(author={author}, facts={facts}'.format(
                 author=self.author,
-                conditions=repr(self.conditions)
+                facts=repr(self.facts)
                 )
 
 
@@ -380,7 +386,7 @@ def choose_k(k):
     Parameters
     ----------
     k: int
-        The number of elements to choose.
+        The number of candidates to choose.
 
     Returns
     -------
@@ -393,19 +399,20 @@ def choose_k(k):
     return choose_func
 
 
-def sample_elems(domains, n_elems, max_tries=100):
-    """Sample N unique elements from given sets of choices
+def sample_candidates(domains, n_candidates, max_tries=100):
+    """Sample N unique candidates from given sets of choices
 
     Parameters
     ----------
     domains: list of lists
         Each sublist contains the possible values that the corresponding
         dimension can take on.
-    n_elems: int
-        The number of unique elements to sample from each domain.
+    n_candidates: int
+        The number of unique candidates to sample from each domain.
     max_tries: int
-        The maximum number of times to loop in order to get n_elems unique
-        element, to prevent an infinite loop in cases that cannot be satisfied.
+        The maximum number of times to loop in order to get n_candidates unique
+        candidate, to prevent an infinite loop in cases that cannot be
+        satisfied.
 
     Returns
     -------
@@ -413,36 +420,37 @@ def sample_elems(domains, n_elems, max_tries=100):
 
     >>> random.seed(123)
     >>> domains = [range(10), range(10, 20), range(20, 30)]
-    >>> sample_elems(domains, 5)
+    >>> sample_candidates(domains, 5)
     [(0, 11, 25), (1, 16, 20), (4, 10, 25), (4, 18, 22), (6, 18, 22)]
     >>> domains = [list('abcdef'), range(6)]
-    >>> sample_elems(domains, 3)
+    >>> sample_candidates(domains, 3)
     [('c', 1), ('c', 5), ('e', 1)]
     >>> domains = [[0, 1], ['a', 'b']]
-    >>> sample_elems(domains, 4)
+    >>> sample_candidates(domains, 4)
     [(0, 'a'), (0, 'b'), (1, 'a'), (1, 'b')]
     """
 
     sample = []
     n_unique = 0
     n_tries = 0
-    while n_unique != n_elems:
+    while n_unique != n_candidates:
 
         n_tries += 1
         if n_tries > max_tries:
             raise TooManyTriesError()
 
-        choose = choose_k(n_elems - n_unique)
+        choose = choose_k(n_candidates - n_unique)
 
-        elems = map(choose, domains)
-        sample.extend(list(zip(*elems)))
+        candidates = map(choose, domains)
+        sample.extend(list(zip(*candidates)))
 
         n_unique = len(set(sample))
 
     return sorted(list(set(sample)))
 
 
-def find_game(domains, n_elems, statements, n_tries, seed=123):
+def find_game(domains, n_candidates, statements, n_tries, player_names=None, 
+              seed=123):
     """Find a game that satisfies a given list of Statements
 
     Find a Game object that has a unique solution under the given Statements.
@@ -453,13 +461,16 @@ def find_game(domains, n_elems, statements, n_tries, seed=123):
     domains: list of lists
         Each sublist contains the possible values that the corresponding
         dimension can take on.
-    n_elems: int
-        The number of unique elements to sample from each domain.
+    n_candidates: int
+        The number of unique candidates to sample from each domain.
     statments: list of Statements
         The statements made by the players about who knows what.
     n_tries: int
         The maximum number of Game objects to generate and test before giving
         up.
+    player_names: list of str
+        The list of player names to use. If not given, each player will be
+        named after the index of the dimension he is told about.
     seed: int
         The value to set the random seed to, for reproducibility of results.
 
@@ -476,8 +487,8 @@ def find_game(domains, n_elems, statements, n_tries, seed=123):
 
     n_solutions = []
     for _ in range(n_tries):
-        elems = sample_elems(domains, n_elems)
-        game = Game(elems)
+        candidates = sample_candidates(domains, n_candidates)
+        game = Game(candidates, player_names)
 
         my_n_solutions = game.n_solutions(statements)
         if my_n_solutions == 1:
@@ -498,12 +509,12 @@ class Knows(Enum):
 
 
 def knows(compatible):
-    """Given a list of elements still compatible, does a player know?
+    """Given a list of candidates still compatible, does a player know?
 
     Parameters
     ----------
     compatible: list
-        The elements that are still compatible with a players current
+        The candidates that are still compatible with a players current
         knowledge.
 
     Returns
@@ -521,7 +532,7 @@ def knows(compatible):
 def knows_cases(cases):
     """Aggregate knowledge over a list of possible cases
 
-    During a game a number of elements might be considered as candidates for a
+    During a game a number of candidates might be considered as candidates for a
     Player. For each of these candidates, the Player might know the solution
     (if the set of candidates has length 1) or not know (otherwise). This
     function aggregates the player's knowledge across the different cases. The
@@ -582,5 +593,5 @@ class MultipleSolutionsError(Error):
     pass
 
 class TooManyTriesError(Error):
-    """Too many tries in finding a sample of elements"""
+    """Too many tries in finding a sample of candidates"""
     pass
