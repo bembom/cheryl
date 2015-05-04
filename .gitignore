@@ -1,4 +1,6 @@
 *.sw[lmnopq]
 __pycache__
+htmlcov
+.coverage
 *.pyc
 .ipynb_checkpoints

@@ -1,3 +1,5 @@
+"""Classes for finding and solving puzzles like Cheryl's birthday puzzle"""
+
 from enum import Enum
 from collections import Counter
 from functools import partial
@@ -6,35 +8,20 @@ import random
 
 
 class Player(object):
+    """A Player who takes part in a Game
+
+    Attributes
+    ----------
+    name: str
+        The name of the player
+    index: int
+        The index of the dimension that this player is told by Cheryl. Starts
+        at zero.
+    """
 
     def __init__(self, name, index):
         self.name = name
         self.index = index
-        self.told = None
-
-    def tell(self, elem):
-        self.told = elem[self.index]
-
-    def view(self, elems):
-        sorted_elems = sorted(elems, key=itemgetter(self.index))
-        return [self._format(x) for x in sorted_elems]
-
-    def matches(self, elem):
-        if self.told is None:
-            return True
-
-        return elem[self.index] == self.told
-
-    def has_solution(self, elems):
-
-        if not elems:
-            return False
-
-        if self.told is None:
-            return True
-
-        possible = [e for e in elems if e[self.index] == self.told]
-        return len(possible) > 0 
 
     def get_compatible(self, truth, elems):
         """Given a possible truth, get all elements that would be compatible
@@ -46,18 +33,18 @@ class Player(object):
         elems: list of tuples
             All elements that are still in play.
 
-        This is from the perspective of another player, that is, it ignores the
-        specific information the player has been told and only makes use of
-        knowing which part of the tuple the player has been told.
+        Returns
+        -------
+        A list of elems that are compatible with this possible truth.
         """
         return [e for e in elems if e[self.index] == truth[self.index]]
 
     def would_know(self, truths, elems):
-        """Given a list of possible truths, would the player know the solution? 
+        """Given a list of possible truths, would the player know the solution?
 
-        This is from the perspective of another player, that is, it ignores the
-        specific information the player has been told and only makes use of
-        knowing which part of the tuple the player has been told.
+        If the player knows the solution for all given truths, then the player
+        knows. If the player does not know for any given truth, the player does
+        not know. Otherwise, the player maybe knows.
 
         Parameters
         ----------
@@ -67,6 +54,9 @@ class Player(object):
         elems: list of tuples
             All elements that are still in play.
 
+        Returns
+        -------
+        A Knows enum value, one of Knows.yes, Knows.maybe, and Knows.no.
         """
 
         cases = []
@@ -76,31 +66,55 @@ class Player(object):
 
         return knows_cases(cases)
 
+    def view(self, elems):
+        """Create a view of a set of elements from this player's perspective
 
-    def _format(self, elem):
-        border = '|' if self.matches(elem) else ' '
+        Elements are sorted by the dimension this player is told about.
 
-        return '{border}{data}{border}'.format(
-            border=border,
-            data=' '.join([str(e) for e in elem])
-            )
+        Parameters
+        ----------
+        elems: list of tuples
+            The elements for which to create the view
+
+        Returns
+        -------
+        A list of strings, one for each element.
+        """
+        sorted_elems = sorted(elems, key=itemgetter(self.index))
+        return [' '.join([str(e) for e in x]) for x in sorted_elems]
 
     def __repr__(self):
-        return "Player(name='{name}', index={index}, told={told})".format(
+        return "Player(name='{name}', index={index})".format(
                 name=self.name,
-                index=self.index, 
-                told=self.told)
+                index=self.index)
 
 
 class Game(object):
+    """A game in which Cheryl tells players separate parts of the truth
+
+    One Player is created for each dimension in the tuples that Cheryl
+    provides.
+
+    Attributes
+    ----------
+    elems: list of tuples
+        The elements that Cheryl gives the players to choose from. These are
+        tuples, with each part of the tuple being a dimension that one player
+        is told about. As statements are applied to filter out elements that
+        incompatible with them, this list shrinks to contain only those that
+        are still in play.
+    player_names: str
+        If given, these are the names of the players. If not given, players are
+        named after the index of the dimension they are told about.
+    """
 
     def __init__(self, elems, player_names=None):
 
         n_players = len(elems[0])
         self.elems = set(elems)
 
-        if player_names is None:  
-            player_names = [str(i) for i in range(n_players)] 
+        if player_names is None:
+            player_names = [str(i) for i in range(n_players)]
         elif len(player_names) != len(set(player_names)):
             msg  = "player_names cannot contain duplicates"
             raise BadPlayerNamesError(msg)
@@ -114,56 +128,34 @@ class Game(object):
 
         self.players = [Player(n, idx) for idx, n in enumerate(player_names)]
 
-    def remove(self, to_remove):
-        self.elems = self.elems.difference(set(to_remove))
-
-    def tell(self, elem):
-
-        for player in self.players:
-            player.tell(elem)
-
     def get_player(self, name):
+        """Get a Player instance by name"""
         for player in self.players:
             if player.name == name:
                 return player
 
     def get_player_names(self):
+        """Get the names of the players"""
         return [player.name for player in self.players]
 
-    def assert_has_solution(self, elems):
-        """
+    def filter(self, statement):
+        """Filter the elements based on a Statment about player's knowledge
 
-        Raises
-        ------
-        NoSolutionError
-        """
-
-        for player in self.players:
-            if not player.has_solution(elems):
-                msg = "No solution for player {}".format(player.name)   
-                raise NoSolutionError(msg)
-
-
-    def filter(self, statement, inplace=True):
-        """
+        Raises a NoSolutionError if no elements satisfy the statement.
 
         Parameters
         ----------
         statement: Statement
             The statement to filter the elements by.
-        inplace: bool
-            Should the Game object be updated in place with the new, filtered
-            elements? Otherwise return a new Game object based on the filtered
-            elements.
 
         Returns
         -------
-        None if inplace is True, a Game object otherwise.
+        A new Game object containing only those elements that are compatible with
+        the given statement.
 
         Raises
         ------
         NoSolutionError
-
         """
 
         filtered = []
@@ -171,56 +163,48 @@ class Game(object):
             if statement.true_for(cand=elem, game=self):
                 filtered.append(elem)
 
-        self.assert_has_solution(filtered)
+        if not filtered:
+            msg = "No elements found that satisfy the filtering criterion"
+            raise NoSolutionError(msg)
 
-        if inplace:
-            self.elems =  set(filtered)
-        else:
-            return Game(elems=filtered, player_names=self.get_player_names())
+        return Game(elems=filtered, player_names=self.get_player_names())
 
 
-    def filter_chain(self, statements, inplace=True, trace=False):
-        """
+    def filter_chain(self, statements, trace=False):
+        """Filter the elements based on a list of Statments
+
+        Raises a NoSolutionError if no elements satisfy the statements.
 
         Parameters
         ----------
         statements: list of Statement
             The statements to filter the elements by, applied one after
-            another.            
-        inplace: bool
-            Should the Game object be updated in place with the new, filtered
-            elements? Otherwise return a new Game object based on the filtered
-            elements.
+            another.
+        trace: bool
+            If true, print out intermediate values.
 
         Returns
         -------
-        None if inplace is True, a Game object otherwise.
+        A new Game object containg only elements that are compatible with the
+        given Statements.
 
         Raises
         ------
         NoSolutionError
 
         """
-        if trace: 
+        if trace:
             print("Before filtering:")
             print(repr(self))
 
-        if inplace:
-            for i, statement in enumerate(statements, 1):
-                self.filter(statement, inplace=True)
-                if trace:
-                    print("\nAfter applying statement {}:".format(i))
-                    print(repr(self))
-        
-        else:
-            game = self 
-            for i, statement in enumerate(statements, 1):
-                game = game.filter(statement, inplace=False)
-                if trace:
-                    print("\nAfter applying statement {}:".format(i))
-                    print(repr(game))
+        game = self
+        for i, statement in enumerate(statements, 1):
+            game = game.filter(statement)
+            if trace:
+                print("\nAfter applying statement {}:".format(i))
+                print(repr(game))
 
-            return game
+        return game
 
     def n_solutions(self, statements):
         """How many elements are compatible with a list of Statements?
@@ -229,12 +213,15 @@ class Game(object):
         ----------
         statements: list of Statement
             The statements to filter the elements by, applied one after
-            another.            
+            another.
 
+        Returns
+        -------
+        int
         """
 
         try:
-            game = self.filter_chain(statements, inplace=False)
+            game = self.filter_chain(statements)
             n_solutions = len(game.elems)
         except NoSolutionError as e:
             n_solutions = 0
@@ -242,8 +229,29 @@ class Game(object):
         return n_solutions
 
     def get_solution(self, statements, trace=False):
+        """Get the solution that satifies the given Statements
 
-        game = self.filter_chain(statements, inplace=False, trace=trace)
+        Raises a NoSolutionError if no solution is found and a
+        MultipleSolutionsError if multiple solutions are found.
+
+        Parameters
+        ----------
+        statements: list of Statement
+            The statements to filter the elements by, applied one after
+            another.
+        trace: bool
+            If true, print out intermediate values.
+
+        Returns
+        -------
+        The one tuple that satisfies all Statements
+
+        Raises
+        ------
+        NoSolutionError, MultipleSolutionsError
+        """
+
+        game = self.filter_chain(statements, trace=trace)
         if len(game.elems) > 1:
             msg = "Found {} solutions".format(len(game.elems))
             raise MultipleSolutionsError(msg)
@@ -262,7 +270,7 @@ class Game(object):
         for player in self.players:
             col_name = '{0:^{1}}'.format(player.name, width)
             col_names.append(col_name)
-                
+
         header = '\t'.join(col_names)
 
         transposed = list(zip(*views))
@@ -273,18 +281,21 @@ class Game(object):
 
 
 class Statement(object):
+    """A statement made by one of the players about who knows what
+
+    Attributes
+    ----------
+    author: str
+        The name of the player who is making this statement.
+    conditions: dict str -> Knows
+        Does each player know, not know, or maybe know? A dictionary mapping
+        player names to Knows enum values. If a player's name does not appear
+        in this dict, no statement about that player's knowledge is made.
+        If a key is a tuple of strings, the given knowledge state applies
+        to at least one of the players specified in the tuple.
+    """
 
     def __init__(self, author, conditions):
-        """
-        author: str
-            The name of the player who is making this statement.
-        conditions: dict str -> Knows
-            Does each player know, not know, or maybe know? A dictionary mapping
-            player names to Knows enum values. If a player's name does not appear
-            in this dict, no statement about that player's knowledge is made.
-            If a key is a tuple of strings, the given knowledge state applies
-            to at least one of the players specified in the tuple.
-        """
         for who, condition in conditions.items():
 
             if not isinstance(who, tuple):
@@ -299,7 +310,7 @@ class Statement(object):
         self.conditions = conditions
 
     def true_for(self, cand, game):
-        """
+        """Is the statement true for a given candidate tuple?
 
         Parameters
         ----------
@@ -334,9 +345,9 @@ class Statement(object):
                 for name in who:
 
                     player_knowledge = game.get_player(name).would_know(
-                            truths=author_compatible, 
+                            truths=author_compatible,
                             elems=game.elems
-                            ) 
+                            )
                     if player_knowledge == expected:
                         found_match = True
 
@@ -346,8 +357,8 @@ class Statement(object):
             else:
 
                 player = game.get_player(who)
-                player_knowledge = player.would_know(truths=author_compatible, 
-                                                    elems=game.elems) 
+                player_knowledge = player.would_know(truths=author_compatible,
+                                                    elems=game.elems)
                 if player_knowledge != self.conditions[who]:
                     return False
 
@@ -355,17 +366,14 @@ class Statement(object):
 
     def __repr__(self):
         return 'Statement(author={author}, conditions={conditions}'.format(
-                author=self.author, 
+                author=self.author,
                 conditions=repr(self.conditions)
                 )
 
 
-    n_elems = 20
-    domains = [range(10), range(10, 20), range(20, 30)]
-
-
 def choose_k(k):
-    """
+    """Get a function that samples K values from a list of choices
+
     Would be nice to use numpy.random.choice here, but will avoid adding numpy
     as a dependency.
 
@@ -382,12 +390,27 @@ def choose_k(k):
     def choose_func(choices):
         return [random.choice(choices) for _ in range(k)]
 
-    return choose_func 
-
+    return choose_func
 
 
 def sample_elems(domains, n_elems, max_tries=100):
-    """
+    """Sample N unique elements from given sets of choices
+
+    Parameters
+    ----------
+    domains: list of lists
+        Each sublist contains the possible values that the corresponding
+        dimension can take on.
+    n_elems: int
+        The number of unique elements to sample from each domain.
+    max_tries: int
+        The maximum number of times to loop in order to get n_elems unique
+        element, to prevent an infinite loop in cases that cannot be satisfied.
+
+    Returns
+    -------
+    A sorted list of tuples
+
     >>> random.seed(123)
     >>> domains = [range(10), range(10, 20), range(20, 30)]
     >>> sample_elems(domains, 5)
@@ -418,15 +441,41 @@ def sample_elems(domains, n_elems, max_tries=100):
 
     return sorted(list(set(sample)))
 
-    
 
+def find_game(domains, n_elems, statements, n_tries, seed=123):
+    """Find a game that satisfies a given list of Statements
 
-def find_game(domains, n_elems, statements, n_trys, seed=123):
+    Find a Game object that has a unique solution under the given Statements.
+    Raises NoGameFoundError if no such game is found.
+
+    Parameters
+    ----------
+    domains: list of lists
+        Each sublist contains the possible values that the corresponding
+        dimension can take on.
+    n_elems: int
+        The number of unique elements to sample from each domain.
+    statments: list of Statements
+        The statements made by the players about who knows what.
+    n_tries: int
+        The maximum number of Game objects to generate and test before giving
+        up.
+    seed: int
+        The value to set the random seed to, for reproducibility of results.
+
+    Returns
+    -------
+    A Game object that has a unique solution under the given Statements
+
+    Raises
+    ------
+    NoGameFoundError
+    """
 
     random.seed(seed)
 
     n_solutions = []
-    for _ in range(n_trys):
+    for _ in range(n_tries):
         elems = sample_elems(domains, n_elems)
         game = Game(elems)
 
@@ -441,6 +490,7 @@ def find_game(domains, n_elems, statements, n_trys, seed=123):
 
 
 class Knows(Enum):
+    """Enum to represent different states of knowledge"""
 
     no = -1
     maybe = 0
@@ -469,7 +519,23 @@ def knows(compatible):
 
 
 def knows_cases(cases):
-    """
+    """Aggregate knowledge over a list of possible cases
+
+    During a game a number of elements might be considered as candidates for a
+    Player. For each of these candidates, the Player might know the solution
+    (if the set of candidates has length 1) or not know (otherwise). This
+    function aggregates the player's knowledge across the different cases. The
+    player knows if he knows for each of the cases; does not know if he does
+    not know for each of the cases; and knows maybe otherwise.
+
+    Parameters
+    ----------
+    cases: list of Knows
+        The knowledge state for the different cases under consideration
+
+    Returns
+    -------
+    A Knows value (Knows.yes, Knows.maybe, or Knows.no).
 
     >>> knows_cases([Knows.yes, Knows.yes, Knows.yes])
     <Knows.yes: 1>
@@ -491,8 +557,8 @@ def knows_cases(cases):
         return Knows.maybe
 
 
-
 class Error(Exception):
+    """Exception base class for this module"""
     pass
 
 class BadPlayerNamesError(Error):
