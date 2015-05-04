@@ -1,15 +1,17 @@
 
-# Solving and generating puzzles like *Find Cheryl's birthday*
+# Solving and Generating Puzzles like *Find Cheryl's birthday*
+
+[![Build Status](https://travis-ci.org/bembom/cheryl.svg?branch=master)](https://travis-ci.org/bembom/cheryl)
 
 [Finding Cheryl's birthday](http://www.nytimes.com/2015/04/15/science/a-math-problem-from-singapore-goes-viral-when-is-cheryls-birthday.html) is a fun puzzle. But what if the situation were more complex? What if apart from Albert and Bernard there was also Carl, and between the three of them they had to guess Cheryl's complete birthday, including the year she was born?
 
 The strategy for solving such puzzles stays the same, but the paper-and-pencil approach quickly becomes tedious as the puzzles become more complex. Also, how would we come up with such puzzles in the first place? Going through a large list of possible permutations before arriving at an interesting version would be even more time consuming.
 
-Inspired by Peter Norvig's [IPython notebook](http://nbviewer.ipython.org/url/norvig.com/ipython/Cheryl.ipynb) on finding Cheryl's birthday in Python, `cheryl` is a Python module for generating and solving such problems in a more general way.
+Inspired by Peter Norvig's [IPython notebook](http://nbviewer.ipython.org/url/norvig.com/ipython/Cheryl.ipynb) on finding Cheryl's birthday in Python, [`cheryl`](https://github.com/bembom/cheryl) is a Python module for generating and solving such problems in a more general way.
 
-## Solving puzzles
+## Solving Puzzles
 
-Let's use the package to solve the original problem:
+Let's use `cheryl` to solve the original problem:
 
 
     from cheryl import Game, Statement, Knows
@@ -52,29 +54,29 @@ We can also ask to see the progression of candidate values that are still in pla
 
     Before filtering:
     Albert	Bernard
-    Aug 17	July 14
+    Aug 15	July 14
     Aug 14	Aug 14
-    Aug 15	Aug 15
-    July 14	May 15
-    July 16	July 16
-    June 18	May 16
-    June 17	Aug 17
-    May 19	June 17
-    May 15	June 18
-    May 16	May 19
+    Aug 17	May 15
+    July 14	Aug 15
+    July 16	May 16
+    June 17	July 16
+    June 18	June 17
+    May 19	Aug 17
+    May 16	June 18
+    May 15	May 19
     
     After applying statement 1:
     Albert	Bernard
-    Aug 17	Aug 14
+    Aug 15	Aug 14
     Aug 14	July 14
-    Aug 15	Aug 15
+    Aug 17	Aug 15
     July 16	July 16
     July 14	Aug 17
     
     After applying statement 2:
     Albert	Bernard
-    Aug 17	Aug 15
-    Aug 15	July 16
+    Aug 15	Aug 15
+    Aug 17	July 16
     July 16	Aug 17
     
     After applying statement 3:
@@ -97,7 +99,7 @@ Next we instantiate `Statement`s that represent what Albert and Bernard know at 
 
 The solution is found through a method call to `get_solution`, which takes a `list` of `Statement`s that must be true when evaluated one after another.
 
-Next let's consider the more complext game, in which Albert, Bernard and Carl guess Cheryl's full birthday. Again Cheryl gives 10 candidate dates:
+Next let's consider the more complex game, in which Albert, Bernard and Carl guess Cheryl's full birthday. Again Cheryl gives 10 candidate dates:
 
 
     candidates = [
@@ -143,97 +145,97 @@ Again we can look at the trace as statements are applied:
 
     Before filtering:
       Albert   	  Bernard  	   Carl    
-    1970 May 19	1973 Aug 18	1973 Aug 16
-    1970 July 18	1973 Aug 16	1973 Aug 18
-    1971 July 19	1971 July 19	1973 May 18
-    1971 May 19	1970 July 18	1974 June 18
-    1973 Aug 18	1974 June 18	1970 July 18
-    1973 May 18	1973 June 18	1973 June 18
-    1973 Aug 16	1973 May 18	1974 Sept 18
-    1973 June 18	1970 May 19	1971 July 19
-    1974 June 18	1971 May 19	1970 May 19
-    1974 Sept 18	1974 Sept 18	1971 May 19
+    1970 May 19	1973 Aug 16	1973 Aug 16
+    1970 July 18	1973 Aug 18	1974 June 18
+    1971 July 19	1971 July 19	1973 June 18
+    1971 May 19	1970 July 18	1973 May 18
+    1973 June 18	1974 June 18	1974 Sept 18
+    1973 Aug 16	1973 June 18	1973 Aug 18
+    1973 May 18	1971 May 19	1970 July 18
+    1973 Aug 18	1973 May 18	1971 July 19
+    1974 June 18	1970 May 19	1971 May 19
+    1974 Sept 18	1974 Sept 18	1970 May 19
     
     After applying statement 1:
       Albert   	  Bernard  	   Carl    
-    1970 May 19	1973 Aug 18	1973 Aug 16
-    1970 July 18	1973 Aug 16	1973 Aug 18
-    1971 July 19	1971 July 19	1973 May 18
-    1971 May 19	1970 July 18	1974 June 18
-    1973 Aug 18	1974 June 18	1970 July 18
-    1973 May 18	1973 June 18	1973 June 18
-    1973 Aug 16	1973 May 18	1974 Sept 18
-    1973 June 18	1970 May 19	1971 July 19
-    1974 June 18	1971 May 19	1970 May 19
-    1974 Sept 18	1974 Sept 18	1971 May 19
+    1970 May 19	1973 Aug 16	1973 Aug 16
+    1970 July 18	1973 Aug 18	1974 June 18
+    1971 July 19	1971 July 19	1973 June 18
+    1971 May 19	1970 July 18	1973 May 18
+    1973 Aug 16	1974 June 18	1974 Sept 18
+    1973 June 18	1973 June 18	1973 Aug 18
+    1973 May 18	1971 May 19	1970 July 18
+    1973 Aug 18	1973 May 18	1971 July 19
+    1974 June 18	1970 May 19	1971 May 19
+    1974 Sept 18	1974 Sept 18	1970 May 19
     
     After applying statement 2:
       Albert   	  Bernard  	   Carl    
-    1970 May 19	1973 Aug 18	1973 Aug 16
-    1970 July 18	1973 Aug 16	1973 Aug 18
-    1971 July 19	1971 July 19	1973 May 18
-    1971 May 19	1970 July 18	1974 June 18
-    1973 Aug 18	1974 June 18	1970 July 18
-    1973 May 18	1973 June 18	1973 June 18
-    1973 Aug 16	1973 May 18	1971 July 19
-    1973 June 18	1970 May 19	1970 May 19
-    1974 June 18	1971 May 19	1971 May 19
+    1970 May 19	1973 Aug 16	1973 Aug 16
+    1970 July 18	1973 Aug 18	1974 June 18
+    1971 May 19	1971 July 19	1973 June 18
+    1971 July 19	1970 July 18	1973 May 18
+    1973 Aug 16	1974 June 18	1973 Aug 18
+    1973 June 18	1973 June 18	1970 July 18
+    1973 May 18	1971 May 19	1971 May 19
+    1973 Aug 18	1973 May 18	1971 July 19
+    1974 June 18	1970 May 19	1970 May 19
     
     After applying statement 3:
       Albert   	  Bernard  	   Carl    
-    1970 May 19	1973 Aug 18	1973 Aug 18
-    1970 July 18	1971 July 19	1973 May 18
-    1971 July 19	1970 July 18	1974 June 18
-    1971 May 19	1974 June 18	1970 July 18
-    1973 Aug 18	1973 June 18	1973 June 18
-    1973 May 18	1973 May 18	1971 July 19
-    1973 June 18	1970 May 19	1970 May 19
-    1974 June 18	1971 May 19	1971 May 19
+    1970 May 19	1973 Aug 18	1974 June 18
+    1970 July 18	1971 July 19	1973 June 18
+    1971 July 19	1970 July 18	1973 May 18
+    1971 May 19	1974 June 18	1973 Aug 18
+    1973 June 18	1973 June 18	1970 July 18
+    1973 May 18	1971 May 19	1971 July 19
+    1973 Aug 18	1973 May 18	1971 May 19
+    1974 June 18	1970 May 19	1970 May 19
     
     After applying statement 4:
       Albert   	  Bernard  	   Carl    
-    1970 May 19	1973 Aug 18	1973 Aug 18
+    1970 May 19	1973 Aug 18	1973 June 18
     1970 July 18	1971 July 19	1973 May 18
-    1971 July 19	1970 July 18	1970 July 18
-    1971 May 19	1973 June 18	1973 June 18
-    1973 Aug 18	1973 May 18	1971 July 19
-    1973 May 18	1970 May 19	1970 May 19
-    1973 June 18	1971 May 19	1971 May 19
+    1971 July 19	1970 July 18	1973 Aug 18
+    1971 May 19	1973 June 18	1970 July 18
+    1973 June 18	1971 May 19	1971 July 19
+    1973 May 18	1973 May 18	1971 May 19
+    1973 Aug 18	1970 May 19	1970 May 19
     
     After applying statement 5:
-      Albert   	  Bernard  	   Carl    
-    1970 May 19	1971 July 19	1970 July 18
+       Albert   	  Bernard   	    Carl    
     1970 July 18	1970 July 18	1973 May 18
-    1971 July 19	1970 May 19	1971 July 19
-    1971 May 19	1971 May 19	1970 May 19
-    1973 May 18	1973 May 18	1971 May 19
+    1970 May 19	1971 July 19	1970 July 18
+    1971 July 19	1973 May 18	1970 May 19
+    1971 May 19	1970 May 19	1971 July 19
+    1973 May 18	1971 May 19	1971 May 19
     
     After applying statement 6:
       Albert   	  Bernard  	   Carl    
-    1970 May 19	1971 July 19	1970 July 18
-    1970 July 18	1970 July 18	1973 May 18
-    1971 July 19	1970 May 19	1971 July 19
-    1971 May 19	1971 May 19	1970 May 19
-    1973 May 18	1973 May 18	1971 May 19
+    1970 May 19	1971 July 19	1973 May 18
+    1970 July 18	1970 July 18	1970 July 18
+    1971 July 19	1971 May 19	1971 July 19
+    1971 May 19	1970 May 19	1971 May 19
+    1973 May 18	1973 May 18	1970 May 19
     
     After applying statement 7:
-      Albert   	  Bernard  	   Carl    
-    1970 May 19	1971 July 19	1970 July 18
-    1970 July 18	1970 July 18	1971 July 19
-    1971 July 19	1970 May 19	1970 May 19
+       Albert   	  Bernard   	    Carl    
+    1970 July 18	1970 July 18	1970 July 18
+    1970 May 19	1971 July 19	1970 May 19
+    1971 July 19	1970 May 19	1971 July 19
     1971 May 19	1971 May 19	1971 May 19
     
     After applying statement 8:
       Albert   	  Bernard  	   Carl    
-    1970 May 19	1971 July 19	1970 July 18
-    1970 July 18	1970 July 18	1971 July 19
-    1971 July 19	1970 May 19	1970 May 19
-    1971 May 19	1971 May 19	1971 May 19
+    1970 May 19	1970 July 18	1970 July 18
+    1970 July 18	1971 July 19	1971 May 19
+    1971 May 19	1971 May 19	1970 May 19
+    1971 July 19	1970 May 19	1971 July 19
     
     After applying statement 9:
       Albert   	  Bernard  	   Carl    
-    1970 May 19	1971 July 19	1971 July 19
-    1971 July 19	1970 May 19	1970 May 19
+    1970 May 19	1971 July 19	1970 May 19
+    1971 July 19	1970 May 19	1971 July 19
     1971 May 19	1971 May 19	1971 May 19
     
     After applying statement 10:
@@ -275,7 +277,7 @@ Let's look at another example:
                             facts={'Carl': Knows.yes}),
                  ]
 
-In this case, Albert starts off by saying that he does not know the solution, but that one of Bernard and Carl might know. This introduces the syntax of giving a tuple of names to denote that the following state is true for at least one of the named players. It also introduces the new state of knowing the solution 'maybe'. This means that when Albert looks at the values that are compatible with what Cheryl told him, there is at least on such value for which either Bernard or Carl know the solution. In other words, Albert cannot be certain that both of the do *not* know the solution.
+In this case, Albert starts off by saying that he does not know the solution, but that either Bernard or Carl might know. This introduces the syntax of giving a tuple of names to denote that the following state is true for at least one of the named players. It also introduces the new state of knowing the solution 'maybe'. This means that when Albert looks at the values that are compatible with what Cheryl told him, there is at least one such value for which either Bernard or Carl knows the solution. In other words, Albert cannot be certain that both of them do *not* know the solution.
 
 This game continues with Bernard and Carl making equivalent statements, before everyone figures out the answer in the second round. 
 
@@ -285,46 +287,46 @@ This game also has a unique solution:
     game.get_solution(statements, trace=True)
 
     Before filtering:
-      Albert   	  Bernard  	   Carl    
-    1970 Aug 16	1971 Aug 17	1973 July 15
-    1970 July 15	1970 Aug 16	1970 July 15
-    1970 Sept 18	1971 Aug 15	1974 Sept 15
+       Albert   	  Bernard   	    Carl    
+    1970 Sept 18	1971 Aug 17	1973 July 15
+    1970 Aug 16	1970 Aug 16	1970 July 15
+    1970 July 15	1971 Aug 15	1974 Sept 15
     1971 Aug 17	1973 July 15	1971 Aug 15
     1971 Aug 15	1970 July 15	1970 Aug 16
     1972 Sept 17	1974 July 19	1971 Aug 17
-    1973 July 15	1973 May 17	1973 May 17
-    1973 May 17	1970 Sept 18	1972 Sept 17
-    1974 Sept 15	1974 Sept 15	1970 Sept 18
-    1974 July 19	1972 Sept 17	1974 July 19
+    1973 May 17	1973 May 17	1972 Sept 17
+    1973 July 15	1972 Sept 17	1973 May 17
+    1974 Sept 15	1970 Sept 18	1970 Sept 18
+    1974 July 19	1974 Sept 15	1974 July 19
     
     After applying statement 1:
-      Albert   	  Bernard  	   Carl    
-    1970 Aug 16	1970 Aug 16	1973 July 15
-    1970 Sept 18	1973 July 15	1974 Sept 15
-    1970 July 15	1970 July 15	1970 July 15
-    1973 July 15	1974 July 19	1970 Aug 16
-    1973 May 17	1973 May 17	1973 May 17
-    1974 Sept 15	1974 Sept 15	1970 Sept 18
-    1974 July 19	1970 Sept 18	1974 July 19
+       Albert   	  Bernard   	    Carl    
+    1970 Sept 18	1970 Aug 16	1973 July 15
+    1970 Aug 16	1973 July 15	1970 July 15
+    1970 July 15	1970 July 15	1974 Sept 15
+    1973 May 17	1974 July 19	1970 Aug 16
+    1973 July 15	1973 May 17	1973 May 17
+    1974 Sept 15	1970 Sept 18	1970 Sept 18
+    1974 July 19	1974 Sept 15	1974 July 19
     
     After applying statement 2:
        Albert   	  Bernard   	    Carl    
+    1970 July 15	1973 July 15	1973 July 15
     1970 Sept 18	1970 July 15	1970 July 15
-    1970 July 15	1974 July 19	1973 July 15
-    1973 July 15	1973 July 15	1974 Sept 15
+    1973 July 15	1974 July 19	1974 Sept 15
     1974 July 19	1970 Sept 18	1970 Sept 18
     1974 Sept 15	1974 Sept 15	1974 July 19
     
     After applying statement 3:
        Albert   	  Bernard   	    Carl    
-    1970 July 15	1973 July 15	1974 Sept 15
-    1973 July 15	1970 July 15	1973 July 15
-    1974 Sept 15	1974 Sept 15	1970 July 15
+    1970 July 15	1973 July 15	1973 July 15
+    1973 July 15	1970 July 15	1970 July 15
+    1974 Sept 15	1974 Sept 15	1974 Sept 15
     
     After applying statement 4:
        Albert   	  Bernard   	    Carl    
-    1970 July 15	1970 July 15	1970 July 15
-    1973 July 15	1973 July 15	1973 July 15
+    1970 July 15	1973 July 15	1973 July 15
+    1973 July 15	1970 July 15	1970 July 15
     1974 Sept 15	1974 Sept 15	1974 Sept 15
     
     After applying statement 5:
@@ -343,7 +345,7 @@ This game also has a unique solution:
 
 
 
-## Generating puzzles
+## Generating Puzzles
 
 These are the kinds of games that can be solved with `cheryl`. But how were these particular configurations found to begin with?
 
@@ -384,43 +386,43 @@ In this case, the call succeeds and we can examine the solution as before:
 
     Before filtering:
       Albert   	  Bernard  	   Carl    
-    1971 Aug 17	1971 Aug 17	1974 June 15
-    1971 June 18	1972 Aug 18	1974 July 16
-    1971 May 17	1971 Aug 19	1971 May 16
-    1971 May 16	1971 Aug 18	1971 Aug 17
-    1971 Aug 19	1974 July 16	1971 May 17
-    1971 Aug 18	1971 June 18	1972 Aug 18
-    1972 Aug 18	1974 June 15	1971 June 18
-    1972 Sept 18	1971 May 17	1972 Sept 18
-    1974 July 16	1971 May 16	1971 Aug 18
+    1971 May 17	1972 Aug 18	1974 June 15
+    1971 Aug 17	1971 Aug 17	1974 July 16
+    1971 Aug 18	1971 Aug 18	1971 May 16
+    1971 Aug 19	1971 Aug 19	1971 May 17
+    1971 May 16	1974 July 16	1971 Aug 17
+    1971 June 18	1974 June 15	1972 Aug 18
+    1972 Aug 18	1971 June 18	1971 Aug 18
+    1972 Sept 18	1971 May 17	1971 June 18
+    1974 July 16	1971 May 16	1972 Sept 18
     1974 June 15	1972 Sept 18	1971 Aug 19
     
     After applying statement 1:
       Albert   	  Bernard  	   Carl    
-    1971 Aug 17	1971 Aug 17	1974 June 15
-    1971 June 18	1972 Aug 18	1974 July 16
-    1971 May 17	1971 Aug 19	1971 May 16
-    1971 May 16	1971 Aug 18	1971 Aug 17
-    1971 Aug 19	1974 July 16	1971 May 17
-    1971 Aug 18	1971 June 18	1972 Aug 18
-    1972 Aug 18	1974 June 15	1971 June 18
-    1972 Sept 18	1971 May 17	1972 Sept 18
-    1974 July 16	1971 May 16	1971 Aug 18
+    1971 May 17	1972 Aug 18	1974 June 15
+    1971 Aug 17	1971 Aug 17	1974 July 16
+    1971 Aug 18	1971 Aug 18	1971 May 16
+    1971 Aug 19	1971 Aug 19	1971 May 17
+    1971 May 16	1974 July 16	1971 Aug 17
+    1971 June 18	1974 June 15	1972 Aug 18
+    1972 Aug 18	1971 June 18	1971 Aug 18
+    1972 Sept 18	1971 May 17	1971 June 18
+    1974 July 16	1971 May 16	1972 Sept 18
     1974 June 15	1972 Sept 18	1971 Aug 19
     
     After applying statement 2:
       Albert   	  Bernard  	   Carl    
-    1971 Aug 17	1971 Aug 17	1974 June 15
-    1971 June 18	1972 Aug 18	1971 Aug 17
-    1971 Aug 19	1971 Aug 19	1972 Aug 18
-    1971 Aug 18	1971 Aug 18	1971 June 18
-    1972 Aug 18	1971 June 18	1971 Aug 18
-    1974 June 15	1974 June 15	1971 Aug 19
+    1971 Aug 17	1972 Aug 18	1974 June 15
+    1971 Aug 18	1971 Aug 17	1971 Aug 17
+    1971 Aug 19	1971 Aug 18	1972 Aug 18
+    1971 June 18	1971 Aug 19	1971 Aug 18
+    1972 Aug 18	1974 June 15	1971 June 18
+    1974 June 15	1971 June 18	1971 Aug 19
     
     After applying statement 3:
       Albert   	  Bernard  	   Carl    
-    1971 Aug 18	1972 Aug 18	1972 Aug 18
-    1971 June 18	1971 Aug 18	1971 Aug 18
+    1971 Aug 18	1971 Aug 18	1971 Aug 18
+    1971 June 18	1972 Aug 18	1972 Aug 18
     1972 Aug 18	1971 June 18	1971 June 18
     
     After applying statement 4:
@@ -466,33 +468,33 @@ As another example we look for a game in which each player first states that nei
     game.get_solution(statements, trace=True)
 
     Before filtering:
-       Albert   	  Bernard   	    Carl    
-    1970 July 19	1971 Aug 17	1972 Sept 15
-    1970 Sept 18	1973 Aug 19	1973 June 15
-    1970 Aug 18	1970 Aug 18	1971 June 16
+      Albert   	  Bernard  	   Carl    
+    1970 Aug 18	1970 Aug 18	1972 Sept 15
+    1970 July 19	1973 Aug 19	1973 June 15
+    1970 Sept 18	1971 Aug 17	1971 June 16
     1971 Aug 17	1970 July 19	1971 Aug 17
-    1971 June 16	1973 July 19	1970 Sept 18
-    1972 Sept 15	1973 June 15	1970 Aug 18
-    1973 Aug 19	1971 June 16	1973 Aug 19
-    1973 June 15	1974 June 19	1970 July 19
-    1973 July 19	1972 Sept 15	1973 July 19
+    1971 June 16	1973 July 19	1970 Aug 18
+    1972 Sept 15	1971 June 16	1970 Sept 18
+    1973 Aug 19	1974 June 19	1973 Aug 19
+    1973 July 19	1973 June 15	1970 July 19
+    1973 June 15	1972 Sept 15	1973 July 19
     1974 June 19	1970 Sept 18	1974 June 19
     
     After applying statement 1:
-       Albert   	  Bernard   	    Carl    
-    1970 July 19	1973 Aug 19	1973 June 15
-    1970 Sept 18	1970 Aug 18	1970 Sept 18
-    1970 Aug 18	1970 July 19	1970 Aug 18
+      Albert   	  Bernard  	   Carl    
+    1970 Aug 18	1970 Aug 18	1973 June 15
+    1970 July 19	1973 Aug 19	1970 Aug 18
+    1970 Sept 18	1970 July 19	1970 Sept 18
     1973 Aug 19	1973 July 19	1973 Aug 19
-    1973 June 15	1973 June 15	1970 July 19
-    1973 July 19	1970 Sept 18	1973 July 19
+    1973 July 19	1973 June 15	1970 July 19
+    1973 June 15	1970 Sept 18	1973 July 19
     
     After applying statement 2:
       Albert   	  Bernard  	   Carl    
-    1970 Aug 18	1973 Aug 19	1970 Aug 18
-    1970 July 19	1970 Aug 18	1973 Aug 19
-    1973 Aug 19	1970 July 19	1970 July 19
-    1973 July 19	1973 July 19	1973 July 19
+    1970 Aug 18	1970 Aug 18	1970 Aug 18
+    1970 July 19	1973 Aug 19	1973 Aug 19
+    1973 Aug 19	1973 July 19	1973 July 19
+    1973 July 19	1970 July 19	1970 July 19
     
     After applying statement 3:
        Albert   	  Bernard   	    Carl    
@@ -541,7 +543,7 @@ Here is an example where we cannot find a matching configuration within the give
 
     NoGameFoundError                          Traceback (most recent call last)
 
-    <ipython-input-37-367d63a504a0> in <module>()
+    <ipython-input-12-367d63a504a0> in <module>()
           9 
          10 game = find_game(domains, n_candidates, statements, n_tries=100, 
     ---> 11                  player_names=['Albert', 'Bernard', 'Carl'])
@@ -559,8 +561,8 @@ Here is an example where we cannot find a matching configuration within the give
     NoGameFoundError: Counter({0: 99, 2: 1})
 
 
-Note that the exception message shows the distribution of the number of times a given number of solution was encountered. In this case, 99 of the 100 samples had zero solutions after applying the given statements and 1 sample had 2 solutions. Since we are looking for a configuration with exactly one solution, `find_games()` failed, but this kind of output is helpful in tweaking the statements to find a feasible configuration.
+Note that the exception message shows the distribution of the number of times a given number of solutions was encountered. In this case, 99 of the 100 samples had zero solutions after applying the given statements and 1 sample had 2 solutions. Since we are looking for a configuration with exactly one solution, `find_games()` failed, but this kind of output is helpful in tweaking the statements to find a feasible configuration.
 
 ## Usage
 
-The module is written in __Python 3.4__ but has no dependencies on other packages. The main thing to do to get the module to work in Python 2 would be to work around its lack of `Enum`s, which are used to encode if a player knows, does not know, or maybe knows the solution.
+The `cheryl` module is available on [GitHub](https://github.com/bembom/cheryl). It is written in __Python 3.4__ but has no dependencies on other packages. The main thing to do to get the module to work in Python 2 would be to work around its lack of `Enum`s, which are used to encode if a player knows, does not know, or maybe knows the solution.
