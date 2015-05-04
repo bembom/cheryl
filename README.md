@@ -1,5 +1,5 @@
 
-# Solving and Generating Puzzles like *Find Cheryl's birthday*
+# Solving and Generating Puzzles like *Find Cheryl's Birthday*
 
 [![Build Status](https://travis-ci.org/bembom/cheryl.svg?branch=master)](https://travis-ci.org/bembom/cheryl)
 
