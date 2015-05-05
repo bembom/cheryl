@@ -81,13 +81,64 @@ class Player(object):
         -------
         A list of strings, one for each candidate.
         """
+        widths = _max_widths(candidates)
         sorted_candidates = sorted(candidates, key=itemgetter(self.index))
-        return [' '.join([str(e) for e in cand]) for cand in sorted_candidates]
+
+        return [_format_candidate(cand, widths) for cand in sorted_candidates]
 
     def __repr__(self):
         return "Player(name='{name}', index={index})".format(
                 name=self.name,
                 index=self.index)
+
+
+def _format_candidate(cand, widths):
+    """Get a string representation of a candidate tuple
+
+    Parameters
+    ----------
+    cand: tuple
+        The candidate tuple
+    widths: sequence
+        The width for each field in the candidate tuple
+
+    Returns
+    -------
+    str
+    """
+    assert len(cand) == len(widths)
+
+    parts = []
+    for elem, width in zip(cand, widths):
+        parts.append('{0:<{1}}'.format(elem, width))
+    return ' '.join(parts)
+
+
+def _max_widths(candidates):
+    """Get the maximum width for each element of a candidate tuple
+
+    What is the maximum number of characters that the first element of the
+    candidate tuples might need, over a list of candidate tuples? How about the
+    other elements?
+
+    Parameters
+    ----------
+    candidates: list of tuples
+        The candidate tuples
+
+    Returns
+    -------
+    A list of ints, giving the maximum width for each element.
+
+    """
+    candidate_list = list(candidates)
+    widths = []
+    for idx in range(len(candidate_list[0])):
+        fields = map(itemgetter(idx), candidate_list)
+        str_fields = map(str, fields)
+        widths.append(max(map(len, str_fields)))
+
+    return widths
 
 
 class Game(object):

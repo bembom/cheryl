@@ -53,31 +53,31 @@ We can also ask to see the progression of candidate values that are still in pla
     game.get_solution([statement1, statement2, statement3], trace=True)
 
     Before filtering:
-    Albert	Bernard
-    Aug 15	July 14
-    Aug 14	Aug 14
-    Aug 17	May 15
-    July 14	Aug 15
-    July 16	May 16
+    Albert 	Bernard
+    Aug  17	July 14
+    Aug  14	Aug  14
+    Aug  15	May  15
+    July 14	Aug  15
+    July 16	May  16
     June 17	July 16
     June 18	June 17
-    May 19	Aug 17
-    May 16	June 18
-    May 15	May 19
+    May  15	Aug  17
+    May  16	June 18
+    May  19	May  19
     
     After applying statement 1:
-    Albert	Bernard
-    Aug 15	Aug 14
-    Aug 14	July 14
-    Aug 17	Aug 15
+    Albert 	Bernard
+    Aug  15	Aug  14
+    Aug  17	July 14
+    Aug  14	Aug  15
     July 16	July 16
-    July 14	Aug 17
+    July 14	Aug  17
     
     After applying statement 2:
-    Albert	Bernard
-    Aug 15	Aug 15
-    Aug 17	July 16
-    July 16	Aug 17
+    Albert 	Bernard
+    Aug  15	Aug  15
+    Aug  17	July 16
+    July 16	Aug  17
     
     After applying statement 3:
     Albert 	Bernard
@@ -144,99 +144,99 @@ Again we can look at the trace as statements are applied:
     game.get_solution(statements, trace=True)
 
     Before filtering:
-      Albert   	  Bernard  	   Carl    
-    1970 May 19	1973 Aug 16	1973 Aug 16
-    1970 July 18	1973 Aug 18	1974 June 18
-    1971 July 19	1971 July 19	1973 June 18
-    1971 May 19	1970 July 18	1973 May 18
-    1973 June 18	1974 June 18	1974 Sept 18
-    1973 Aug 16	1973 June 18	1973 Aug 18
-    1973 May 18	1971 May 19	1970 July 18
-    1973 Aug 18	1973 May 18	1971 July 19
-    1974 June 18	1970 May 19	1971 May 19
-    1974 Sept 18	1974 Sept 18	1970 May 19
+       Albert   	  Bernard   	    Carl    
+    1970 May  19	1973 Aug  18	1973 Aug  16
+    1970 July 18	1973 Aug  16	1974 June 18
+    1971 May  19	1971 July 19	1973 Aug  18
+    1971 July 19	1970 July 18	1973 June 18
+    1973 Aug  18	1974 June 18	1973 May  18
+    1973 June 18	1973 June 18	1970 July 18
+    1973 May  18	1971 May  19	1974 Sept 18
+    1973 Aug  16	1970 May  19	1971 May  19
+    1974 June 18	1973 May  18	1970 May  19
+    1974 Sept 18	1974 Sept 18	1971 July 19
     
     After applying statement 1:
-      Albert   	  Bernard  	   Carl    
-    1970 May 19	1973 Aug 16	1973 Aug 16
-    1970 July 18	1973 Aug 18	1974 June 18
-    1971 July 19	1971 July 19	1973 June 18
-    1971 May 19	1970 July 18	1973 May 18
-    1973 Aug 16	1974 June 18	1974 Sept 18
-    1973 June 18	1973 June 18	1973 Aug 18
-    1973 May 18	1971 May 19	1970 July 18
-    1973 Aug 18	1973 May 18	1971 July 19
-    1974 June 18	1970 May 19	1971 May 19
-    1974 Sept 18	1974 Sept 18	1970 May 19
+       Albert   	  Bernard   	    Carl    
+    1970 May  19	1973 Aug  18	1973 Aug  16
+    1970 July 18	1973 Aug  16	1974 June 18
+    1971 May  19	1971 July 19	1973 Aug  18
+    1971 July 19	1970 July 18	1973 June 18
+    1973 Aug  18	1974 June 18	1973 May  18
+    1973 June 18	1973 June 18	1970 July 18
+    1973 May  18	1971 May  19	1974 Sept 18
+    1973 Aug  16	1970 May  19	1971 May  19
+    1974 June 18	1973 May  18	1970 May  19
+    1974 Sept 18	1974 Sept 18	1971 July 19
     
     After applying statement 2:
-      Albert   	  Bernard  	   Carl    
-    1970 May 19	1973 Aug 16	1973 Aug 16
-    1970 July 18	1973 Aug 18	1974 June 18
-    1971 May 19	1971 July 19	1973 June 18
-    1971 July 19	1970 July 18	1973 May 18
-    1973 Aug 16	1974 June 18	1973 Aug 18
+       Albert   	  Bernard   	    Carl    
+    1970 May  19	1973 Aug  18	1973 Aug  16
+    1970 July 18	1973 Aug  16	1974 June 18
+    1971 May  19	1971 July 19	1973 Aug  18
+    1971 July 19	1970 July 18	1973 June 18
+    1973 Aug  18	1974 June 18	1973 May  18
     1973 June 18	1973 June 18	1970 July 18
-    1973 May 18	1971 May 19	1971 May 19
-    1973 Aug 18	1973 May 18	1971 July 19
-    1974 June 18	1970 May 19	1970 May 19
+    1973 May  18	1971 May  19	1971 May  19
+    1973 Aug  16	1970 May  19	1970 May  19
+    1974 June 18	1973 May  18	1971 July 19
     
     After applying statement 3:
-      Albert   	  Bernard  	   Carl    
-    1970 May 19	1973 Aug 18	1974 June 18
-    1970 July 18	1971 July 19	1973 June 18
-    1971 July 19	1970 July 18	1973 May 18
-    1971 May 19	1974 June 18	1973 Aug 18
-    1973 June 18	1973 June 18	1970 July 18
-    1973 May 18	1971 May 19	1971 July 19
-    1973 Aug 18	1973 May 18	1971 May 19
-    1974 June 18	1970 May 19	1970 May 19
+       Albert   	  Bernard   	    Carl    
+    1970 May  19	1973 Aug  18	1974 June 18
+    1970 July 18	1971 July 19	1973 Aug  18
+    1971 May  19	1970 July 18	1973 June 18
+    1971 July 19	1974 June 18	1973 May  18
+    1973 Aug  18	1973 June 18	1970 July 18
+    1973 June 18	1971 May  19	1971 May  19
+    1973 May  18	1970 May  19	1970 May  19
+    1974 June 18	1973 May  18	1971 July 19
     
     After applying statement 4:
-      Albert   	  Bernard  	   Carl    
-    1970 May 19	1973 Aug 18	1973 June 18
-    1970 July 18	1971 July 19	1973 May 18
-    1971 July 19	1970 July 18	1973 Aug 18
-    1971 May 19	1973 June 18	1970 July 18
-    1973 June 18	1971 May 19	1971 July 19
-    1973 May 18	1973 May 18	1971 May 19
-    1973 Aug 18	1970 May 19	1970 May 19
+       Albert   	  Bernard   	    Carl    
+    1970 May  19	1973 Aug  18	1973 Aug  18
+    1970 July 18	1971 July 19	1973 June 18
+    1971 May  19	1970 July 18	1973 May  18
+    1971 July 19	1973 June 18	1970 July 18
+    1973 Aug  18	1971 May  19	1971 May  19
+    1973 June 18	1970 May  19	1970 May  19
+    1973 May  18	1973 May  18	1971 July 19
     
     After applying statement 5:
        Albert   	  Bernard   	    Carl    
-    1970 July 18	1970 July 18	1973 May 18
-    1970 May 19	1971 July 19	1970 July 18
-    1971 July 19	1973 May 18	1970 May 19
-    1971 May 19	1970 May 19	1971 July 19
-    1973 May 18	1971 May 19	1971 May 19
+    1970 July 18	1970 July 18	1973 May  18
+    1970 May  19	1971 July 19	1970 July 18
+    1971 May  19	1973 May  18	1971 May  19
+    1971 July 19	1971 May  19	1970 May  19
+    1973 May  18	1970 May  19	1971 July 19
     
     After applying statement 6:
-      Albert   	  Bernard  	   Carl    
-    1970 May 19	1971 July 19	1973 May 18
-    1970 July 18	1970 July 18	1970 July 18
-    1971 July 19	1971 May 19	1971 July 19
-    1971 May 19	1970 May 19	1971 May 19
-    1973 May 18	1973 May 18	1970 May 19
+       Albert   	  Bernard   	    Carl    
+    1970 July 18	1971 July 19	1973 May  18
+    1970 May  19	1970 July 18	1970 July 18
+    1971 July 19	1973 May  18	1971 July 19
+    1971 May  19	1971 May  19	1971 May  19
+    1973 May  18	1970 May  19	1970 May  19
     
     After applying statement 7:
        Albert   	  Bernard   	    Carl    
-    1970 July 18	1970 July 18	1970 July 18
-    1970 May 19	1971 July 19	1970 May 19
-    1971 July 19	1970 May 19	1971 July 19
-    1971 May 19	1971 May 19	1971 May 19
+    1970 May  19	1971 July 19	1970 July 18
+    1970 July 18	1970 July 18	1970 May  19
+    1971 July 19	1970 May  19	1971 July 19
+    1971 May  19	1971 May  19	1971 May  19
     
     After applying statement 8:
-      Albert   	  Bernard  	   Carl    
-    1970 May 19	1970 July 18	1970 July 18
-    1970 July 18	1971 July 19	1971 May 19
-    1971 May 19	1971 May 19	1970 May 19
-    1971 July 19	1970 May 19	1971 July 19
+       Albert   	  Bernard   	    Carl    
+    1970 May  19	1971 July 19	1970 July 18
+    1970 July 18	1970 July 18	1971 May  19
+    1971 May  19	1971 May  19	1971 July 19
+    1971 July 19	1970 May  19	1970 May  19
     
     After applying statement 9:
-      Albert   	  Bernard  	   Carl    
-    1970 May 19	1971 July 19	1970 May 19
-    1971 July 19	1970 May 19	1971 July 19
-    1971 May 19	1971 May 19	1971 May 19
+       Albert   	  Bernard   	    Carl    
+    1970 May  19	1971 July 19	1971 May  19
+    1971 May  19	1971 May  19	1971 July 19
+    1971 July 19	1970 May  19	1970 May  19
     
     After applying statement 10:
       Albert   	  Bernard  	   Carl    
@@ -288,45 +288,45 @@ This game also has a unique solution:
 
     Before filtering:
        Albert   	  Bernard   	    Carl    
-    1970 Sept 18	1971 Aug 17	1973 July 15
-    1970 Aug 16	1970 Aug 16	1970 July 15
-    1970 July 15	1971 Aug 15	1974 Sept 15
-    1971 Aug 17	1973 July 15	1971 Aug 15
-    1971 Aug 15	1970 July 15	1970 Aug 16
-    1972 Sept 17	1974 July 19	1971 Aug 17
-    1973 May 17	1973 May 17	1972 Sept 17
-    1973 July 15	1972 Sept 17	1973 May 17
-    1974 Sept 15	1970 Sept 18	1970 Sept 18
-    1974 July 19	1974 Sept 15	1974 July 19
+    1970 Aug  16	1971 Aug  17	1973 July 15
+    1970 Sept 18	1970 Aug  16	1974 Sept 15
+    1970 July 15	1971 Aug  15	1970 July 15
+    1971 Aug  17	1973 July 15	1971 Aug  15
+    1971 Aug  15	1974 July 19	1970 Aug  16
+    1972 Sept 17	1970 July 15	1972 Sept 17
+    1973 July 15	1973 May  17	1971 Aug  17
+    1973 May  17	1972 Sept 17	1973 May  17
+    1974 July 19	1970 Sept 18	1970 Sept 18
+    1974 Sept 15	1974 Sept 15	1974 July 19
     
     After applying statement 1:
        Albert   	  Bernard   	    Carl    
-    1970 Sept 18	1970 Aug 16	1973 July 15
-    1970 Aug 16	1973 July 15	1970 July 15
-    1970 July 15	1970 July 15	1974 Sept 15
-    1973 May 17	1974 July 19	1970 Aug 16
-    1973 July 15	1973 May 17	1973 May 17
-    1974 Sept 15	1970 Sept 18	1970 Sept 18
-    1974 July 19	1974 Sept 15	1974 July 19
+    1970 Aug  16	1970 Aug  16	1973 July 15
+    1970 Sept 18	1974 July 19	1974 Sept 15
+    1970 July 15	1973 July 15	1970 July 15
+    1973 July 15	1970 July 15	1970 Aug  16
+    1973 May  17	1973 May  17	1973 May  17
+    1974 July 19	1970 Sept 18	1970 Sept 18
+    1974 Sept 15	1974 Sept 15	1974 July 19
     
     After applying statement 2:
        Albert   	  Bernard   	    Carl    
-    1970 July 15	1973 July 15	1973 July 15
-    1970 Sept 18	1970 July 15	1970 July 15
-    1973 July 15	1974 July 19	1974 Sept 15
+    1970 Sept 18	1974 July 19	1973 July 15
+    1970 July 15	1973 July 15	1974 Sept 15
+    1973 July 15	1970 July 15	1970 July 15
     1974 July 19	1970 Sept 18	1970 Sept 18
     1974 Sept 15	1974 Sept 15	1974 July 19
     
     After applying statement 3:
        Albert   	  Bernard   	    Carl    
-    1970 July 15	1973 July 15	1973 July 15
-    1973 July 15	1970 July 15	1970 July 15
+    1970 July 15	1970 July 15	1970 July 15
+    1973 July 15	1973 July 15	1973 July 15
     1974 Sept 15	1974 Sept 15	1974 Sept 15
     
     After applying statement 4:
        Albert   	  Bernard   	    Carl    
-    1970 July 15	1973 July 15	1973 July 15
-    1973 July 15	1970 July 15	1970 July 15
+    1970 July 15	1970 July 15	1970 July 15
+    1973 July 15	1973 July 15	1973 July 15
     1974 Sept 15	1974 Sept 15	1974 Sept 15
     
     After applying statement 5:
@@ -385,45 +385,45 @@ In this case, the call succeeds and we can examine the solution as before:
     game.get_solution(statements, trace=True)
 
     Before filtering:
-      Albert   	  Bernard  	   Carl    
-    1971 May 17	1972 Aug 18	1974 June 15
-    1971 Aug 17	1971 Aug 17	1974 July 16
-    1971 Aug 18	1971 Aug 18	1971 May 16
-    1971 Aug 19	1971 Aug 19	1971 May 17
-    1971 May 16	1974 July 16	1971 Aug 17
-    1971 June 18	1974 June 15	1972 Aug 18
-    1972 Aug 18	1971 June 18	1971 Aug 18
-    1972 Sept 18	1971 May 17	1971 June 18
-    1974 July 16	1971 May 16	1972 Sept 18
-    1974 June 15	1972 Sept 18	1971 Aug 19
+       Albert   	  Bernard   	    Carl    
+    1971 Aug  17	1971 Aug  17	1974 June 15
+    1971 May  16	1971 Aug  19	1971 May  16
+    1971 Aug  19	1971 Aug  18	1974 July 16
+    1971 June 18	1972 Aug  18	1971 Aug  17
+    1971 May  17	1974 July 16	1971 May  17
+    1971 Aug  18	1974 June 15	1971 June 18
+    1972 Sept 18	1971 June 18	1971 Aug  18
+    1972 Aug  18	1971 May  16	1972 Sept 18
+    1974 June 15	1971 May  17	1972 Aug  18
+    1974 July 16	1972 Sept 18	1971 Aug  19
     
     After applying statement 1:
-      Albert   	  Bernard  	   Carl    
-    1971 May 17	1972 Aug 18	1974 June 15
-    1971 Aug 17	1971 Aug 17	1974 July 16
-    1971 Aug 18	1971 Aug 18	1971 May 16
-    1971 Aug 19	1971 Aug 19	1971 May 17
-    1971 May 16	1974 July 16	1971 Aug 17
-    1971 June 18	1974 June 15	1972 Aug 18
-    1972 Aug 18	1971 June 18	1971 Aug 18
-    1972 Sept 18	1971 May 17	1971 June 18
-    1974 July 16	1971 May 16	1972 Sept 18
-    1974 June 15	1972 Sept 18	1971 Aug 19
+       Albert   	  Bernard   	    Carl    
+    1971 Aug  17	1971 Aug  17	1974 June 15
+    1971 May  16	1971 Aug  19	1971 May  16
+    1971 Aug  19	1971 Aug  18	1974 July 16
+    1971 June 18	1972 Aug  18	1971 Aug  17
+    1971 May  17	1974 July 16	1971 May  17
+    1971 Aug  18	1974 June 15	1971 June 18
+    1972 Sept 18	1971 June 18	1971 Aug  18
+    1972 Aug  18	1971 May  16	1972 Sept 18
+    1974 June 15	1971 May  17	1972 Aug  18
+    1974 July 16	1972 Sept 18	1971 Aug  19
     
     After applying statement 2:
-      Albert   	  Bernard  	   Carl    
-    1971 Aug 17	1972 Aug 18	1974 June 15
-    1971 Aug 18	1971 Aug 17	1971 Aug 17
-    1971 Aug 19	1971 Aug 18	1972 Aug 18
-    1971 June 18	1971 Aug 19	1971 Aug 18
-    1972 Aug 18	1974 June 15	1971 June 18
-    1974 June 15	1971 June 18	1971 Aug 19
+       Albert   	  Bernard   	    Carl    
+    1971 Aug  17	1971 Aug  17	1974 June 15
+    1971 Aug  19	1971 Aug  19	1971 Aug  17
+    1971 June 18	1971 Aug  18	1971 June 18
+    1971 Aug  18	1972 Aug  18	1971 Aug  18
+    1972 Aug  18	1974 June 15	1972 Aug  18
+    1974 June 15	1971 June 18	1971 Aug  19
     
     After applying statement 3:
-      Albert   	  Bernard  	   Carl    
-    1971 Aug 18	1971 Aug 18	1971 Aug 18
-    1971 June 18	1972 Aug 18	1972 Aug 18
-    1972 Aug 18	1971 June 18	1971 June 18
+       Albert   	  Bernard   	    Carl    
+    1971 June 18	1972 Aug  18	1971 June 18
+    1971 Aug  18	1971 Aug  18	1972 Aug  18
+    1972 Aug  18	1971 June 18	1971 Aug  18
     
     After applying statement 4:
       Albert   	  Bernard  	   Carl    
@@ -468,39 +468,39 @@ As another example we look for a game in which each player first states that nei
     game.get_solution(statements, trace=True)
 
     Before filtering:
-      Albert   	  Bernard  	   Carl    
-    1970 Aug 18	1970 Aug 18	1972 Sept 15
-    1970 July 19	1973 Aug 19	1973 June 15
-    1970 Sept 18	1971 Aug 17	1971 June 16
-    1971 Aug 17	1970 July 19	1971 Aug 17
-    1971 June 16	1973 July 19	1970 Aug 18
-    1972 Sept 15	1971 June 16	1970 Sept 18
-    1973 Aug 19	1974 June 19	1973 Aug 19
-    1973 July 19	1973 June 15	1970 July 19
-    1973 June 15	1972 Sept 15	1973 July 19
-    1974 June 19	1970 Sept 18	1974 June 19
+       Albert   	  Bernard   	    Carl    
+    1970 Sept 18	1971 Aug  17	1973 June 15
+    1970 Aug  18	1973 Aug  19	1972 Sept 15
+    1970 July 19	1970 Aug  18	1971 June 16
+    1971 Aug  17	1973 July 19	1971 Aug  17
+    1971 June 16	1970 July 19	1970 Sept 18
+    1972 Sept 15	1973 June 15	1970 Aug  18
+    1973 Aug  19	1971 June 16	1973 Aug  19
+    1973 June 15	1974 June 19	1974 June 19
+    1973 July 19	1970 Sept 18	1973 July 19
+    1974 June 19	1972 Sept 15	1970 July 19
     
     After applying statement 1:
-      Albert   	  Bernard  	   Carl    
-    1970 Aug 18	1970 Aug 18	1973 June 15
-    1970 July 19	1973 Aug 19	1970 Aug 18
-    1970 Sept 18	1970 July 19	1970 Sept 18
-    1973 Aug 19	1973 July 19	1973 Aug 19
-    1973 July 19	1973 June 15	1970 July 19
-    1973 June 15	1970 Sept 18	1973 July 19
+       Albert   	  Bernard   	    Carl    
+    1970 Sept 18	1973 Aug  19	1973 June 15
+    1970 Aug  18	1970 Aug  18	1970 Sept 18
+    1970 July 19	1973 July 19	1970 Aug  18
+    1973 Aug  19	1970 July 19	1973 Aug  19
+    1973 June 15	1973 June 15	1973 July 19
+    1973 July 19	1970 Sept 18	1970 July 19
     
     After applying statement 2:
-      Albert   	  Bernard  	   Carl    
-    1970 Aug 18	1970 Aug 18	1970 Aug 18
-    1970 July 19	1973 Aug 19	1973 Aug 19
-    1973 Aug 19	1973 July 19	1973 July 19
-    1973 July 19	1970 July 19	1970 July 19
+       Albert   	  Bernard   	    Carl    
+    1970 Aug  18	1973 Aug  19	1970 Aug  18
+    1970 July 19	1970 Aug  18	1973 Aug  19
+    1973 Aug  19	1970 July 19	1970 July 19
+    1973 July 19	1973 July 19	1973 July 19
     
     After applying statement 3:
        Albert   	  Bernard   	    Carl    
-    1970 July 19	1973 Aug 19	1973 Aug 19
-    1973 Aug 19	1973 July 19	1973 July 19
-    1973 July 19	1970 July 19	1970 July 19
+    1970 July 19	1973 Aug  19	1973 Aug  19
+    1973 Aug  19	1970 July 19	1970 July 19
+    1973 July 19	1973 July 19	1973 July 19
     
     After applying statement 4:
        Albert   	  Bernard   	    Carl    
@@ -551,11 +551,11 @@ Here is an example where we cannot find a matching configuration within the give
 
 
     /mnt/home/obembom/projects/cheryl/cheryl.py in find_game(domains, n_candidates, statements, n_tries, player_names, seed)
-        498 
-        499     msg = repr(Counter(n_solutions))
-    --> 500     raise NoGameFoundError(msg)
-        501 
-        502 
+        549 
+        550     msg = repr(Counter(n_solutions))
+    --> 551     raise NoGameFoundError(msg)
+        552 
+        553 
 
 
     NoGameFoundError: Counter({0: 99, 2: 1})

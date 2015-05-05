@@ -1,6 +1,9 @@
-README.md: cheryl.ipynb
+README.md: cheryl.ipynb travis_build_status_link
 	ipython nbconvert cheryl.ipynb --to=markdown
-	mv cheryl.md README.md
+	head -n 2 cheryl.md > header
+	sed '1d;2d;3d' cheryl.md > body 
+	cat header travis_build_status_link body > README.md
+	rm cheryl.md header body
 
 test:
 	py.test --doctest-modules cheryl.py
